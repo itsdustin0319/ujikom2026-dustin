@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Petugas - E-Parking</title>
+    <style>
+        :root {
+            --p: #00b4db;
+            --secondary: #a8e063;
+            --dark: #005a87;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Frutiger', sans-serif;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--dark);
+        }
+
+        /* Ornamen Gelembung di Background */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+            z-index: -1;
+        }
+        body::before { width: 400px; height: 400px; top: -100px; right: -100px; }
+        body::after { width: 300px; height: 300px; bottom: -50px; left: -100px; }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 30px;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar h2 {
+            color: var(--dark);
+            text-shadow: 1px 1px 2px white;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            margin-left: 310px;
+            padding: 40px;
+            width: calc(100% - 350px);
+        }
+
+        .card {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover { transform: translateY(-5px); }
+
+        h3 {
+            margin-top: 0;
+            color: var(--dark);
+            text-shadow: 1px 1px 0px white;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 90, 135, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--p);
+            box-shadow: 0 0 10px rgba(0, 180, 219, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 180, 219, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #00f2fe 0%, #4facfe 100%);
+            box-shadow: 0 8px 20px rgba(0, 180, 219, 0.4);
+            transform: scale(1.02);
+        }
+
+        .btn-logout {
+            background: linear-gradient(to bottom, #ff7e5f 0%, #feb47b 100%);
+            margin-top: auto;
+            border-radius: 50px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin-top: 10px;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--dark);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(0, 180, 219, 0.2);
+        }
+
+        td {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-top: 1px solid white;
+        }
+
+        tr td:first-child { border-radius: 15px 0 0 15px; }
+        tr td:last-child { border-radius: 0 15px 15px 0; }
+
+        /* --- CSS PRINT --- */
+        #struk, #struk_keluar {
+            display: none;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #struk.active, #struk.active *, 
+            #struk_keluar.active, #struk_keluar.active * {
+                visibility: visible;
+            }
+            #struk.active, #struk_keluar.active {
+                display: block !important;
+                position: absolute;
+                left: 0; top: 0; width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>E-PARKING</h2>
+        <p>Menu Petugas</p>
+        <button class="btn" onclick="location.href='../auth/login.html'"
+            style="background:#ff4757; margin-top:50px">Logout</button>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h3 style="margin-top:0">🚗 Check-In Kendaraan</h3>
+            <input type="text" id="plat" placeholder="Nomor Plat (Contoh: B 1234 ABC)">
+            <select id="area"></select>
+            <select id="tarif"></select>
+            <button class="btn" onclick="checkIn()">MASUK & CETAK TIKET</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0">📤 Check-Out (Cari Plat)</h3>
+            <input type="text" id="cari_plat" placeholder="Masukkan Plat Nomor Kendaraan Keluar" />
+            <button class="btn" style="background:#2ecc71" onclick="cariKendaraan()">CEK BIAYA & KELUAR</button>
+
+            <div id="info_keluar"
+                style="display:none; margin-top:20px; border-top:1px solid var(--border-color); padding-top:15px;">
+                <p style="color: var(--text-secondary);">Waktu Masuk: <span id="v_masuk"
+                        style="color: var(--text-primary);"></span></p>
+                <p style="color: var(--text-secondary);">Durasi: <span id="v_durasi"
+                        style="color: var(--razer-green);"></span> Jam</p>
+                <h2 style="color:var(--razer-green); text-shadow: 0 0 10px var(--razer-green-glow);">Total: Rp <span
+                        id="v_biaya"></span></h2>
+                <button class="btn" id="btn_konfirmasi">KONFIRMASI PEMBAYARAN & CETAK</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Kendaraan di Dalam</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu Masuk</th>
+                        <th>Plat</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="t_aktif"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="struk">
+        <h3>STRUK PARKIR UKK</h3>
+        <p>---------------------------</p>
+        <h1 id="p_plat"></h1>
+        <p id="p_waktu"></p>
+        <p>---------------------------</p>
+        <p>Terima Kasih</p>
+    </div>
+
+    <div id="struk_keluar">
+        <h3>BUKTI PEMBAYARAN PARKIR</h3>
+        <p>----------------------------------</p>
+        <h1 id="pk_plat"></h1>
+        <p>Masuk: <span id="pk_masuk"></span></p>
+        <p>Keluar: <span id="pk_keluar"></span></p>
+        <p>Durasi: <span id="pk_durasi"></span> Jam</p>
+        <p>----------------------------------</p>
+        <h2>TOTAL: Rp <span id="pk_biaya"></span></h2>
+        <p>----------------------------------</p>
+        <p>LUNAS - Terima Kasih</p>
+    </div>
+
+    <script>
+        const id_u = localStorage.getItem('id_user');
+
+        async function load() {
+            try {
+                const [ra, rt, rk] = await Promise.all([
+                    fetch('http://localhost:3000/api/area'),
+                    fetch('http://localhost:3000/api/tarif'),
+                    fetch('http://localhost:3000/api/kendaraan-aktif')
+                ]);
+                const areas = await ra.json();
+                const tarifs = await rt.json();
+                const aktif = await rk.json();
+
+                document.getElementById('area').innerHTML = '<option value="">-- Pilih Area --</option>' + areas.map(a => `<option value="${a.id_area}">${a.nama_area} (Sisa: ${a.kapasitas - a.terisi})</option>`).join('');
+                document.getElementById('tarif').innerHTML = '<option value="">-- Pilih Tarif --</option>' + tarifs.map(t => `<option value="${t.id_tarif}">${t.jenis_kendaraan} - Rp${t.tarif_per_jam}</option>`).join('');
+               document.getElementById('t_aktif').innerHTML = aktif.map(k => `
+    <tr>
+        <td>${new Date(k.waktu_masuk).toLocaleTimeString('id-ID')}</td>
+        <td><b>${k.plat_nomor}</b></td>
+        <td>
+            <button onclick="pindahKeCari('${k.plat_nomor}')" 
+                    style="color:var(--dark); border:none; background:none; cursor:pointer; font-weight:bold; text-transform: uppercase;">
+                KELUAR
+            </button>
+        </td>
+    </tr>
+`).join('');
+            } catch (error) { console.error(error); }
+        }
+
+function pindahKeCari(plat) {
+    // 1. Masukkan plat nomor dari tabel ke kotak input pencarian
+    document.getElementById('cari_plat').value = plat;
+    
+    // 2. Scroll ke atas agar petugas langsung melihat rincian biaya
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // 3. Panggil fungsi cariKendaraan secara otomatis
+    cariKendaraan();
+}
+
+        async function checkIn() {
+            const plat = document.getElementById('plat').value;
+            const area = document.getElementById('area').value;
+            const tarif = document.getElementById('tarif').value;
+            if (!plat || !area || !tarif) return alert("Lengkapi data!");
+
+            try {
+                const response = await fetch('http://localhost:3000/api/transaksi/masuk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plat_nomor: plat, id_area: area, id_tarif: tarif, id_user: id_u })
+                });
+
+                if (response.ok) {
+                    document.getElementById('p_plat').innerText = plat;
+                    document.getElementById('p_waktu').innerText = new Date().toLocaleString();
+                    cetakStruk('struk');
+                    load();
+                    document.getElementById('plat').value = '';
+                }
+            } catch (error) { alert(error.message); }
+        }
+
+        async function cariKendaraan() {
+    const plat = document.getElementById('cari_plat').value;
+    if (!plat) return alert("Masukkan plat nomor!");
+
+    try {
+        const r = await fetch(`http://localhost:3000/api/cari-kendaraan?plat=${encodeURIComponent(plat)}`);
+        const res = await r.json();
+        
+        if (r.ok && res.success) {
+            // Tampilkan area info
+            document.getElementById('info_keluar').style.display = 'block';
+            
+            // SESUAIKAN: Mengambil data langsung dari res (bukan res.data)
+            document.getElementById('v_masuk').innerText = new Date(res.waktu_masuk).toLocaleString('id-ID');
+            document.getElementById('v_durasi').innerText = res.durasi;
+            document.getElementById('v_biaya').innerText = res.biaya_estimasi.toLocaleString();
+            
+            // Set action untuk tombol konfirmasi
+            document.getElementById('btn_konfirmasi').onclick = () => checkOut(res.id_parkir, res.plat_nomor);
+            
+            alert("Data ditemukan!");
+        } else {
+            alert(res.message || "Kendaraan tidak ditemukan atau sudah keluar");
+            document.getElementById('info_keluar').style.display = 'none';
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error: Gagal menghubungi server");
+    }
+}
+       async function checkOut(id, plat) {
+    try {
+        const r = await fetch('http://localhost:3000/api/transaksi/keluar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_parkir: id })
+        });
+        
+        const res = await r.json();
+
+        if (r.ok) {
+            // Isi data struk keluar untuk di-print
+            document.getElementById('pk_plat').innerText = plat;
+            document.getElementById('pk_masuk').innerText = document.getElementById('v_masuk').innerText;
+            document.getElementById('pk_keluar').innerText = new Date().toLocaleString('id-ID');
+            document.getElementById('pk_durasi').innerText = document.getElementById('v_durasi').innerText;
+            document.getElementById('pk_biaya').innerText = res.biaya.toLocaleString();
+
+            alert("Pembayaran Berhasil!");
+            
+            // Jalankan fungsi cetak
+            cetakStruk('struk_keluar');
+            
+            // Reset tampilan
+            document.getElementById('info_keluar').style.display = 'none';
+            document.getElementById('cari_plat').value = '';
+            load(); // Refresh tabel kendaraan di dalam
+        } else {
+            alert(res.message || "Gagal memproses transaksi keluar");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Terjadi kesalahan sistem saat proses keluar");
+    }
+}
+        function cetakStruk(idElemen) {
+            const el = document.getElementById(idElemen);
+            el.classList.add('active'); // Tandai struk yang mau di-print
+            window.print();
+            el.classList.remove('active');
+        }
+
+        load();
+    </script>
+</body>
+
+</html>

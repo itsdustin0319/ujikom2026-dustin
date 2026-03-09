@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - E-Parking</title>
+    <style>
+        :root {
+            --p: #00b4db;
+            --secondary: #a8e063;
+            --dark: #005a87;
+            --glass: rgba(255, 255, 255, 0.75);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%);
+            background-attachment: fixed;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Glassmorphism */
+        .sidebar {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 30px;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            color: var(--dark);
+            text-shadow: 1px 1px 0px white;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: var(--dark);
+            border: 1px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 180, 219, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 40px;
+            width: calc(100% - 280px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Statistik Cards */
+        .stat-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-box h2 {
+            margin: 10px 0 0 0;
+            color: var(--dark);
+            font-size: 2rem;
+        }
+
+        .stat-box small {
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Modal Aero Style */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 380px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid white;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .btn-add {
+            background: linear-gradient(to bottom, #a8e063, #56ab2f);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .btn-add:hover {
+            transform: scale(1.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            background: rgba(0, 180, 219, 0.1);
+            color: var(--dark);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .log-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: 15px;
+}
+
+.log-table th {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    text-align: left;
+    color: #005a87;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.log-table td {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.log-table tr td:first-child { border-radius: 10px 0 0 10px; }
+.log-table tr td:last-child { border-radius: 0 10px 10px 0; }
+
+.badge-aktivitas {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+}
+
+.bg-checkin { background: linear-gradient(to bottom, #4facfe, #00f2fe); }
+.bg-checkout { background: linear-gradient(to bottom, #a8e063, #56ab2f); }
+.bg-login { background: linear-gradient(to bottom, #ff7e5f, #feb47b); }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>E-PARKING ADMIN</h2>
+        <button class="btn-add" style="margin-bottom: 20px; background: #ff7e5f; width: 100%;"
+            onclick="handleLogout()">LOGOUT</button>
+
+        <div class="menu-item active" onclick="openTab(event, 'tab-user')">👥 CRUD User</div>
+        <div class="menu-item" onclick="openTab(event, 'tab-tarif')">💰 CRUD Tarif Parkir</div>
+        <div class="menu-item" onclick="openTab(event, 'tab-area')">🅿️ CRUD Area Parkir</div>
+        <div class="menu-item" onclick="openTab(event, 'tab-log')">📋 Akses Log Aktivitas</div>
+    </div>
+
+    <div class="content">
+        <div id="tab-user" class="tab-content active">
+            <div class="card">
+                <h3>Kelola Data User (Petugas & Owner)</h3>
+                <button class="btn-add" onclick="openUserModal()">+ Tambah User Baru</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-user"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-tarif" class="tab-content">
+            <div class="card">
+                <h3>Pengaturan Tarif Parkir</h3>
+                <p style="color: #005a87; font-size: 0.9em; margin-bottom: 15px;">* Ubah nominal pada kolom harga dan
+                    klik <b>Update</b> untuk menyimpan.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Jenis Kendaraan</th>
+                            <th>Tarif per Jam (Rp)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-tarif"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-area" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin:0;">Kapasitas Area Parkir</h3>
+                    <button class="btn-add" onclick="openAreaModal()">+ Tambah Area Baru</button>
+                </div>
+
+                <div class="stat-container">
+                    <div class="stat-box">
+                        <small>Total Kapasitas</small>
+                        <h2 id="total-kapasitas">0</h2>
+                    </div>
+                    <div class="stat-box">
+                        <small>Total Terisi</small>
+                        <h2 id="total-terisi" style="color: #ff7e5f;">0</h2>
+                    </div>
+                    <div class="stat-box">
+                        <small>Total Tersedia</small>
+                        <h2 id="total-tersedia" style="color: #56ab2f;">0</h2>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Area</th>
+                            <th>Kapasitas</th>
+                            <th>Terisi</th>
+                            <th>Tersedia</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-area-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+<div id="tab-log" class="tab-content">
+    <div class="card">
+        <h3>Log Aktivitas Sistem</h3>
+        <p>Riwayat login dan transaksi secara real-time.</p>
+        <hr style="border: 0.5px solid rgba(255,255,255,0.3); margin: 15px 0;">
+        
+        <div id="log-container">
+            <p>Memuat data...</p>
+        </div>
+    </div>
+</div>
+
+
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Tambah User</h3>
+            <input type="hidden" id="edit_id_user">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <select id="role">
+                <option value="petugas">Petugas</option>
+                <option value="admin">Admin</option>
+                <option value="owner">Owner</option>
+            </select>
+            <button class="btn-add" onclick="simpanUser()" style="width:100%">SIMPAN DATA</button>
+            <button onclick="closeModal()"
+                style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+        </div>
+    </div>
+
+    <div id="areaModal" class="modal">
+        <div class="modal-content">
+            <h3>Tambah Area Baru</h3>
+            <input type="text" id="nama_area" placeholder="Nama Area (Contoh: Lantai 1)">
+            <input type="number" id="kapasitas" placeholder="Kapasitas Slot (Contoh: 1000)">
+            <button class="btn-add" onclick="simpanArea()" style="width:100%">SIMPAN AREA</button>
+            <button onclick="closeAreaModal()"
+                style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // --- FUNGSI LOGOUT ---
+        function handleLogout() {
+            if (confirm("Apakah anda yakin ingin keluar?")) {
+                localStorage.clear();
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // --- MANAJEMEN TAB ---
+       function openTab(evt, tabName) {
+    const contents = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+
+    const menuItems = document.getElementsByClassName("menu-item");
+    for (let i = 0; i < menuItems.length; i++) menuItems[i].classList.remove("active");
+
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+
+    // --- TAMBAHKAN BARIS INI ---
+    if (tabName === 'tab-user') loadUsers();
+    if (tabName === 'tab-tarif') loadTarif();
+    if (tabName === 'tab-area') loadArea();
+    if (tabName === 'tab-log') loadLogs(); // Panggil fungsi loadLogs di sini
+}
+
+        // --- CRUD AREA PARKIR ---
+        async function loadArea() {
+            try {
+                const res = await fetch(`${API_URL}/area`);
+                const data = await res.json();
+                const tbody = document.getElementById('list-area-body');
+
+                let totalK = 0, totalTi = 0, totalTs = 0;
+
+                tbody.innerHTML = data.map((a, index) => {
+                    const tersedia = a.kapasitas - a.terisi;
+                    totalK += Number(a.kapasitas);
+                    totalTi += Number(a.terisi);
+                    totalTs += tersedia;
+
+                    return `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><b>${a.nama_area}</b></td>
+                            <td>${a.kapasitas} Slot</td>
+                            <td>${a.terisi}</td>
+                            <td style="color:#56ab2f; font-weight:bold;">${tersedia}</td>
+                            <td>
+                                <button onclick="hapusArea(${a.id_area})" style="color:#ff7e5f; border:none; background:none; cursor:pointer; font-weight:bold;">🗑️ Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('total-kapasitas').innerText = totalK;
+                document.getElementById('total-terisi').innerText = totalTi;
+                document.getElementById('total-tersedia').innerText = totalTs;
+            } catch (err) { console.error("Gagal load area"); }
+        }
+
+        async function simpanArea() {
+            const nama_area = document.getElementById('nama_area').value;
+            const kapasitas = document.getElementById('kapasitas').value;
+            if (!nama_area || !kapasitas) return alert("Lengkapi data!");
+
+            try {
+                const res = await fetch(`${API_URL}/area/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nama_area, kapasitas })
+                });
+                if (res.ok) {
+                    alert("Area berhasil ditambah!");
+                    closeAreaModal();
+                    loadArea();
+                }
+            } catch (err) { alert("Gagal simpan"); }
+        }
+
+        async function hapusArea(id) {
+            if (!confirm("Hapus area ini?")) return;
+            try {
+                await fetch(`${API_URL}/area/delete/${id}`, { method: 'DELETE' });
+                loadArea();
+            } catch (err) { alert("Gagal hapus"); }
+        }
+
+        function openAreaModal() { document.getElementById('areaModal').style.display = 'block'; }
+        function closeAreaModal() { document.getElementById('areaModal').style.display = 'none'; }
+
+        // --- CRUD USER & TARIF (Keep existing logic) ---
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/users`);
+                const users = await res.json();
+                const tbody = document.getElementById('list-user');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td><b>${u.username}</b></td>
+                        <td>${u.role.toUpperCase()}</td>
+                        <td style="color: ${u.status_aktif == 1 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
+                            ● ${u.status_aktif == 1 ? 'Aktif' : 'Nonaktif'}
+                        </td>
+                        <td>
+                            <button onclick="editUser('${u.id_user}', '${u.username}', '${u.role}')" style="color:var(--p); background:none; border:none; cursor:pointer;">✏️ Edit</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { }
+        }
+
+        async function loadTarif() {
+            try {
+                const res = await fetch(`${API_URL}/tarif`);
+                const data = await res.json();
+                document.getElementById('list-tarif').innerHTML = data.map(t => `
+                    <tr>
+                        <td><b>${t.jenis_kendaraan.toUpperCase()}</b></td>
+                        <td><input type="number" id="price-${t.id_tarif}" value="${t.tarif_per_jam}" style="width:100px; padding:5px;"></td>
+                        <td><button onclick="updateHarga(${t.id_tarif})" class="btn-add" style="padding:5px 10px;">💾 Update</button></td>
+                    </tr>
+                `).join('');
+            } catch (err) { }
+        }
+
+        async function updateHarga(id) {
+            const harga = document.getElementById(`price-${id}`).value;
+            await fetch(`${API_URL}/tarif/update/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tarif_per_jam: harga })
+            });
+            alert("Harga diperbarui!");
+            loadTarif();
+        }
+
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/users`);
+                const users = await res.json();
+                const tbody = document.getElementById('list-user');
+
+                tbody.innerHTML = users.map(u => `
+            <tr>
+                <td><b>${u.username}</b></td>
+                <td>${u.role.toUpperCase()}</td>
+                <td>
+                    <span style="color: ${u.status_aktif == 1 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
+                        ● ${u.status_aktif == 1 ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                </td>
+                <td>
+                    <button onclick="editUser('${u.id_user}', '${u.username}', '${u.role}')" 
+                            style="color: #00b4db; background:none; border:none; cursor:pointer; font-weight:bold;">
+                        ✏️ Edit
+                    </button>
+                    
+                    <span style="color: #ccc; margin: 0 5px;">|</span>
+
+                    <button onclick="toggleStatus('${u.id_user}', ${u.status_aktif})" 
+                            style="color: ${u.status_aktif == 1 ? '#e74c3c' : '#2ecc71'}; background:none; border:none; cursor:pointer; font-weight:bold;">
+                        ${u.status_aktif == 1 ? '🚫 Nonaktifkan' : '✅ Aktifkan'}
+                    </button>
+
+                    <span style="color: #ccc; margin: 0 5px;">|</span>
+
+                    <button onclick="hapusUser('${u.id_user}')" 
+                            style="color: #ff4757; background:none; border:none; cursor:pointer; font-weight:bold;">
+                        🗑️ Hapus
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+            } catch (err) {
+                console.error("Gagal memuat data user:", err);
+            }
+        }
+
+        async function hapusUser(id) {
+            if (!confirm("Apakah Anda yakin ingin menghapus user ini secara permanen?")) return;
+
+            try {
+                const res = await fetch(`${API_URL}/users/delete/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.ok) {
+                    alert("User berhasil dihapus!");
+                    loadUsers(); // Refresh tabel
+                } else {
+                    alert("Gagal menghapus user dari server");
+                }
+            } catch (err) {
+                alert("Koneksi gagal saat mencoba menghapus user");
+            }
+        }
+
+
+     async function loadLogs() {
+    const container = document.getElementById('log-container');
+    container.innerHTML = '<p>🔄 Memuat data...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/logs`);
+        const result = await response.json();
+        
+        // Cek apakah 'result' adalah array. 
+        // Jika backend mengirim { success: true, data: [...] }, gunakan result.data
+        const logs = Array.isArray(result) ? result : (result.data || []);
+
+        if (logs.length === 0) {
+            container.innerHTML = '<p>ℹ️ Belum ada aktivitas tercatat.</p>';
+            return;
+        }
+
+        let html = `
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>User</th>
+                        <th>Aktivitas</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        html += logs.map(log => {
+            let badgeClass = 'bg-login';
+            const act = log.aktivitas ? log.aktivitas.toLowerCase() : '';
+            if(act.includes('in')) badgeClass = 'bg-checkin';
+            if(act.includes('out')) badgeClass = 'bg-checkout';
+
+            return `
+                <tr>
+<td>${new Date(log.waktu_aktivitas).toLocaleString('id-ID')}</td>
+                    <td><b>${log.username || 'Sistem'}</b></td>
+                    <td><span class="badge-aktivitas ${badgeClass}">${log.aktivitas}</span></td>
+                    <td>${log.detail}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    } catch (error) {
+        container.innerHTML = `<p style="color:red">❌ Error: ${error.message}</p>`;
+    }
+}
+
+        async function toggleStatus(id, currentStatus) {
+            // Balikkan status: jika 1 jadi 0, jika 0 jadi 1
+            const newStatus = currentStatus == 1 ? 0 : 1;
+            const label = newStatus == 1 ? "Mengaktifkan" : "Menonaktifkan";
+
+            if (!confirm(`Yakin ingin ${label} user ini?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/users/status/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (res.ok) {
+                    loadUsers(); // Refresh tabel setelah status berubah
+                } else {
+                    alert("Gagal memperbarui status di server");
+                }
+            } catch (err) {
+                alert("Koneksi gagal saat memperbarui status");
+            }
+        }
+
+
+
+        function openUserModal() { document.getElementById('userModal').style.display = 'block'; }
+        function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+
+        window.onload = () => {
+            loadUsers();
+            loadTarif();
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login E-Parking - Frutiger Aero</title>
+    <style>
+        body { 
+            /* Background gradasi langit cerah khas Frutiger Aero */
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%); 
+            font-family: 'Segoe UI', 'Frutiger', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ornamen Gelembung Glossy */
+        body::before, body::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+            z-index: 0;
+        }
+        body::before { width: 300px; height: 300px; top: -50px; left: -50px; }
+        body::after { width: 200px; height: 200px; bottom: 20px; right: 50px; }
+
+        .login-box { 
+            background: rgba(255, 255, 255, 0.7); 
+            padding: 40px; 
+            border-radius: 20px; 
+            width: 340px; 
+            /* Efek kaca (Glassmorphism) & bayangan lembut */
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
+            text-align: center; 
+            z-index: 1;
+        }
+
+        h2 { 
+            color: #005a87; 
+            margin-bottom: 25px; 
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            letter-spacing: 1px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 12px 0; 
+            border: 1.5px solid rgba(0, 131, 176, 0.3); 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #00b4db;
+            box-shadow: 0 0 10px rgba(0, 180, 219, 0.4);
+        }
+
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            /* Gradasi Glossy pada tombol */
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%); 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.4); 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold; 
+            box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        button:hover { 
+            background: linear-gradient(to bottom, #00f2fe 0%, #4facfe 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 180, 219, 0.5);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #005a87;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>LOGIN PARKIR</h2>
+        <input type="text" id="user" placeholder="Username">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="prosesLogin()">MASUK</button>
+    </div>
+
+    <script>
+        async function prosesLogin() {
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    alert('Login Berhasil sebagai ' + data.user.role);
+                    // Arahkan ke folder admin/petugas/owner
+                    if(data.user.role === 'admin') window.location.href = '../admin/index.html';
+                    else if(data.user.role === 'petugas') window.location.href = '../petugas/index.html';
+                    else window.location.href = '../owner/index.html';
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                alert('Server Belum Jalan! Jalankan node server.js di terminall.');
+            }
+        }
+    </script>
+</body>
+</html>
