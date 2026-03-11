@@ -1,148 +1,223 @@
 <!DOCTYPE html>
+<!-- Deklarasi tipe dokumen HTML5 -->
 <html lang="id">
+<!-- lang="id" = bahasa Bahasa Indonesia -->
 
 <head>
     <meta charset="UTF-8">
+    <!-- charset UTF-8: encoding karakter universal -->
     <title>Admin Dashboard - E-Parking</title>
     <style>
+        /* ======================================================
+           CSS SECTION
+           Halaman Admin: CRUD User, Tarif, Area, Log Aktivitas
+           Menggunakan tab-based navigation (tab panel)
+           ====================================================== */
+
+        /* CSS Custom Properties (variabel global) — bisa dipakai di mana saja di dalam CSS ini */
         :root {
             --p: #00b4db;
+            /* Warna primary: biru langit */
             --secondary: #a8e063;
+            /* Warna secondary: hijau lembut */
             --dark: #005a87;
+            /* Warna teks gelap: biru tua */
             --glass: rgba(255, 255, 255, 0.75);
+            /* Warna glassmorphism: putih 75% transparan */
         }
 
         body {
             font-family: 'Segoe UI', sans-serif;
+            /* Font modern bawaan Windows */
+            /* Background gradasi diagonal biru langit → biru tua → hijau */
             background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%);
             background-attachment: fixed;
+            /* Background tidak ikut scroll — tetap di tempat */
             margin: 0;
             display: flex;
+            /* Flexbox: sidebar kiri + konten kanan sejajar */
             min-height: 100vh;
+            /* Minimal setinggi layar */
         }
 
-        /* Sidebar Glassmorphism */
+        /* Sidebar navigasi kiri — menggunakan Glassmorphism */
         .sidebar {
             width: 260px;
             background: rgba(255, 255, 255, 0.3);
+            /* Semi-transparan 30% */
             backdrop-filter: blur(15px);
+            /* Blur di belakang → efek kaca */
             border-right: 1px solid rgba(255, 255, 255, 0.5);
+            /* Border kaca tipis */
             padding: 30px;
             position: fixed;
+            /* Tetap di tempat saat konten di-scroll */
             height: 100vh;
+            /* Setinggi viewport */
             display: flex;
             flex-direction: column;
+            /* Susun vertikal */
             box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+            /* Bayangan ke kanan */
             box-sizing: border-box;
+            /* Padding masuk ke dalam perhitungan lebar */
         }
 
+        /* Judul di sidebar */
         .sidebar h2 {
             color: var(--dark);
             text-shadow: 1px 1px 0px white;
+            /* Bayangan tipis → teks lebih terbaca */
             margin-bottom: 30px;
             font-size: 1.5rem;
         }
 
+        /* Item menu di sidebar (tombol tab navigasi) */
         .menu-item {
             padding: 12px 20px;
             margin: 5px 0;
             border-radius: 50px;
+            /* Berbentuk pil */
             cursor: pointer;
             transition: all 0.3s;
+            /* Animasi smooth untuk perubahan style */
             font-weight: 600;
             color: var(--dark);
             border: 1px solid transparent;
+            /* Border transparan (muncul saat hover) */
         }
 
+        /* Efek hover menu item */
         .menu-item:hover {
             background: rgba(255, 255, 255, 0.4);
+            /* Sedikit putih saat hover */
             border: 1px solid white;
+            /* Border putih muncul */
             transform: translateX(5px);
+            /* Geser 5px ke kanan → efek interaktif */
         }
 
+        /* Menu item yang sedang aktif (halaman sedang ditampilkan) */
         .menu-item.active {
             background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            /* Gradasi biru glossy */
             color: white;
+            /* Teks putih */
             box-shadow: 0 4px 15px rgba(0, 180, 219, 0.4);
+            /* Bayangan biru */
             border: 1px solid rgba(255, 255, 255, 0.5);
+            /* Border kaca */
         }
 
+        /* Area konten utama (sebelah kanan sidebar) */
         .content {
             margin-left: 280px;
+            /* Geser sejauh lebar sidebar */
             padding: 40px;
             width: calc(100% - 280px);
+            /* Lebar = layar penuh dikurangi sidebar */
         }
 
+        /* Tab panel konten — semua tersembunyi kecuali yang aktif */
         .tab-content {
             display: none;
+            /* Tersembunyi secara default */
             animation: fadeIn 0.5s ease;
+            /* Animasi fade-in saat tab dibuka */
         }
 
+        /* Tab yang sedang aktif — ditampilkan */
         .tab-content.active {
             display: block;
+            /* Tampilkan konten tab yang aktif */
         }
 
+        /* Kartu konten dengan efek Glassmorphism */
         .card {
             background: var(--glass);
+            /* Putih 75% transparan */
             padding: 30px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
+            /* Efek kaca */
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            /* Bayangan lembut */
         }
 
-        /* Statistik Cards */
+        /* Container statistik area parkir (3 kotak berjajar) */
         .stat-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
+            /* 3 kolom sama lebar */
             gap: 20px;
+            /* Jarak antar kotak */
             margin-bottom: 30px;
         }
 
+        /* Kotak statistik individual */
         .stat-box {
             background: white;
+            /* Latar putih solid */
             padding: 20px;
             border-radius: 15px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.8);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            /* Bayangan sangat halus */
         }
 
+        /* Angka besar di kotak statistik */
         .stat-box h2 {
             margin: 10px 0 0 0;
             color: var(--dark);
             font-size: 2rem;
+            /* Ukuran besar agar mudah dibaca sekilas */
         }
 
+        /* Label kecil di kotak statistik */
         .stat-box small {
             color: #666;
             font-weight: bold;
             text-transform: uppercase;
+            /* Huruf kapital semua */
         }
 
-        /* Modal Aero Style */
+        /* Modal (popup form tambah user / tambah area)
+           Overlay yang menutupi seluruh layar */
         .modal {
             display: none;
+            /* Tersembunyi secara default */
             position: fixed;
+            /* Cover seluruh layar */
             z-index: 1000;
+            /* Di atas semua elemen */
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.3);
+            /* Overlay hitam 30% transparan */
             backdrop-filter: blur(5px);
+            /* Blur latar di balik modal */
         }
 
+        /* Konten di dalam modal */
         .modal-content {
             background: rgba(255, 255, 255, 0.95);
+            /* Hampir putih solid */
             margin: 10% auto;
+            /* Push ke tengah dengan margin auto */
             padding: 30px;
             border-radius: 20px;
             width: 380px;
+            /* Lebar modal */
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            /* Bayangan dalam */
             border: 1px solid white;
         }
 
+        /* Styling input dan select di dalam modal */
         input,
         select {
             width: 100%;
@@ -151,113 +226,171 @@
             border-radius: 10px;
             border: 1px solid #ccc;
             box-sizing: border-box;
+            /* Padding tidak meluber keluar */
         }
 
+        /* Tombol tambah/simpan (hijau gradasi) */
         .btn-add {
             background: linear-gradient(to bottom, #a8e063, #56ab2f);
+            /* Gradasi hijau */
             color: white;
             border: none;
             padding: 12px 25px;
             border-radius: 50px;
+            /* Bentuk pil */
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: 0.3s;
         }
 
+        /* Efek hover tombol add */
         .btn-add:hover {
             transform: scale(1.05);
+            /* Perbesar 5% saat hover */
         }
 
+        /* Tabel data umum (user, tarif, area) */
         table {
             width: 100%;
             border-collapse: collapse;
+            /* Hapus jarak antar border sel */
             margin-top: 20px;
             background: rgba(255, 255, 255, 0.3);
+            /* Putih transparan */
             border-radius: 10px;
             overflow: hidden;
+            /* Sembunyikan konten yang melewati border-radius */
         }
 
+        /* Header tabel */
         th {
             text-align: left;
             padding: 15px;
             background: rgba(0, 180, 219, 0.1);
+            /* Background biru sangat transparan */
             color: var(--dark);
         }
 
+        /* Sel data tabel */
         td {
             padding: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            /* Garis pemisah baris */
         }
 
+        /* Animasi Fade In — digunakan saat tab dibuka */
         @keyframes fadeIn {
             from {
                 opacity: 0;
+                /* Mulai dari transparan */
                 transform: translateY(10px);
+                /* Mulai dari 10px di bawah */
             }
 
             to {
                 opacity: 1;
+                /* Berakhir opacity penuh */
                 transform: translateY(0);
+                /* Kembali ke posisi normal */
             }
         }
+
+        /* Tabel khusus untuk log aktivitas */
         .log-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    margin-top: 15px;
-}
+            width: 100%;
+            border-collapse: separate;
+            /* Gunakan separate agar border-spacing berfungsi */
+            border-spacing: 0 8px;
+            /* Jarak vertikal 8px antar baris */
+            margin-top: 15px;
+        }
 
-.log-table th {
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.3);
-    text-align: left;
-    color: #005a87;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-}
+        /* Header tabel log */
+        .log-table th {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            text-align: left;
+            color: #005a87;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            /* Ukuran kecil untuk header */
+        }
 
-.log-table td {
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(5px);
-    border-top: 1px solid rgba(255, 255, 255, 0.8);
-}
+        /* Sel data tabel log */
+        .log-table td {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            /* Semi-transparan */
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+        }
 
-.log-table tr td:first-child { border-radius: 10px 0 0 10px; }
-.log-table tr td:last-child { border-radius: 0 10px 10px 0; }
+        /* Sudut melengkung hanya di sisi yang benar tiap baris log */
+        .log-table tr td:first-child {
+            border-radius: 10px 0 0 10px;
+            /* Kiri atas + kiri bawah */
+        }
 
-.badge-aktivitas {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-    color: white;
-}
+        .log-table tr td:last-child {
+            border-radius: 0 10px 10px 0;
+            /* Kanan atas + kanan bawah */
+        }
 
-.bg-checkin { background: linear-gradient(to bottom, #4facfe, #00f2fe); }
-.bg-checkout { background: linear-gradient(to bottom, #a8e063, #56ab2f); }
-.bg-login { background: linear-gradient(to bottom, #ff7e5f, #feb47b); }
+        /* Badge (label berwarna) untuk jenis aktivitas di log */
+        .badge-aktivitas {
+            padding: 4px 10px;
+            border-radius: 20px;
+            /* Bentuk pil lonjong */
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Warna badge: biru = check-in kendaraan masuk */
+        .bg-checkin {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+        }
+
+        /* Warna badge: hijau = check-out kendaraan keluar */
+        .bg-checkout {
+            background: linear-gradient(to bottom, #a8e063, #56ab2f);
+        }
+
+        /* Warna badge: oranye-merah = user login */
+        .bg-login {
+            background: linear-gradient(to bottom, #ff7e5f, #feb47b);
+        }
     </style>
 </head>
+<!-- // Admin dashboard: manage users, tariffs, areas, logs -->
 
 <body>
 
+    <!-- SIDEBAR NAVIGASI ADMIN -->
     <div class="sidebar">
         <h2>E-PARKING ADMIN</h2>
+        <!-- Tombol logout dengan style merah lebar penuh -->
         <button class="btn-add" style="margin-bottom: 20px; background: #ff7e5f; width: 100%;"
             onclick="handleLogout()">LOGOUT</button>
 
+        <!-- Item menu navigasi tab — setiap klik akan membuka tab yang berbeda -->
+        <!-- class="active" pada item pertama berarti tab pertama yang aktif saat halaman dibuka -->
         <div class="menu-item active" onclick="openTab(event, 'tab-user')">👥 CRUD User</div>
         <div class="menu-item" onclick="openTab(event, 'tab-tarif')">💰 CRUD Tarif Parkir</div>
         <div class="menu-item" onclick="openTab(event, 'tab-area')">🅿️ CRUD Area Parkir</div>
         <div class="menu-item" onclick="openTab(event, 'tab-log')">📋 Akses Log Aktivitas</div>
     </div>
 
+    <!-- AREA KONTEN UTAMA (Tab Panel) -->
     <div class="content">
+
+        <!-- TAB 1: Management User -->
+        <!-- class="tab-content active" → tab ini tampil pertama kali -->
         <div id="tab-user" class="tab-content active">
             <div class="card">
                 <h3>Kelola Data User (Petugas & Owner)</h3>
+                <!-- Tombol buka modal tambah user baru -->
                 <button class="btn-add" onclick="openUserModal()">+ Tambah User Baru</button>
                 <table>
                     <thead>
@@ -268,11 +401,13 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
+                    <!-- tbody kosong, diisi JavaScript dari API /api/users -->
                     <tbody id="list-user"></tbody>
                 </table>
             </div>
         </div>
 
+        <!-- TAB 2: Management Tarif Parkir -->
         <div id="tab-tarif" class="tab-content">
             <div class="card">
                 <h3>Pengaturan Tarif Parkir</h3>
@@ -286,11 +421,13 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
+                    <!-- tbody diisi JavaScript dari API /api/tarif -->
                     <tbody id="list-tarif"></tbody>
                 </table>
             </div>
         </div>
 
+        <!-- TAB 3: Management Area Parkir -->
         <div id="tab-area" class="tab-content">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -298,21 +435,26 @@
                     <button class="btn-add" onclick="openAreaModal()">+ Tambah Area Baru</button>
                 </div>
 
+                <!-- 3 kotak ringkasan statistik kapasitas -->
                 <div class="stat-container">
                     <div class="stat-box">
                         <small>Total Kapasitas</small>
+                        <!-- id="total-kapasitas" → diisi JavaScript hasil penjumlahan semua kapasitas area -->
                         <h2 id="total-kapasitas">0</h2>
                     </div>
                     <div class="stat-box">
                         <small>Total Terisi</small>
+                        <!-- style merah → tanda bahaya (slot tersisa sedikit) -->
                         <h2 id="total-terisi" style="color: #ff7e5f;">0</h2>
                     </div>
                     <div class="stat-box">
                         <small>Total Tersedia</small>
+                        <!-- style hijau → tanda aman (masih ada tempat) -->
                         <h2 id="total-tersedia" style="color: #56ab2f;">0</h2>
                     </div>
                 </div>
 
+                <!-- Tabel daftar area parkir -->
                 <table>
                     <thead>
                         <tr>
@@ -324,209 +466,267 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
+                    <!-- tbody diisi JavaScript dari API /api/area -->
                     <tbody id="list-area-body"></tbody>
                 </table>
             </div>
         </div>
 
-<div id="tab-log" class="tab-content">
-    <div class="card">
-        <h3>Log Aktivitas Sistem</h3>
-        <p>Riwayat login dan transaksi secara real-time.</p>
-        <hr style="border: 0.5px solid rgba(255,255,255,0.3); margin: 15px 0;">
-        
-        <div id="log-container">
-            <p>Memuat data...</p>
+        <!-- TAB 4: Log Aktivitas Sistem -->
+        <div id="tab-log" class="tab-content">
+            <div class="card">
+                <h3>Log Aktivitas Sistem</h3>
+                <p>Riwayat login dan transaksi secara real-time.</p>
+                <hr style="border: 0.5px solid rgba(255,255,255,0.3); margin: 15px 0;">
+
+                <!-- Area log — diisi penuh oleh JavaScript (termasuk tabel-nya) -->
+                <div id="log-container">
+                    <p>Memuat data...</p>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
 
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Tambah User</h3>
-            <input type="hidden" id="edit_id_user">
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <select id="role">
-                <option value="petugas">Petugas</option>
-                <option value="admin">Admin</option>
-                <option value="owner">Owner</option>
-            </select>
-            <button class="btn-add" onclick="simpanUser()" style="width:100%">SIMPAN DATA</button>
-            <button onclick="closeModal()"
-                style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+        <!-- MODAL: Form Tambah/Edit User -->
+        <!-- modal: overlay popup yang menutupi layar, tersembunyi saat display: none -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <!-- Judul modal berubah: "Tambah User" atau "Edit User" tergantung mode -->
+                <h3 id="modalTitle">Tambah User</h3>
+                <!-- Input tersembunyi: menyimpan ID user saat mode edit, kosong saat mode tambah -->
+                <!-- type="hidden": tidak terlihat user tapi nilainya dikirim oleh JavaScript -->
+                <input type="hidden" id="edit_id_user">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <!-- Dropdown pilihan role -->
+                <select id="role">
+                    <option value="petugas">Petugas</option>
+                    <option value="admin">Admin</option>
+                    <option value="owner">Owner</option>
+                </select>
+                <!-- Tombol simpan: memanggil simpanUser() yang menangani mode tambah/edit sekaligus -->
+                <button class="btn-add" onclick="simpanUser()" style="width:100%">SIMPAN DATA</button>
+                <!-- Tombol batal: menutup modal tanpa menyimpan -->
+                <button onclick="closeModal()"
+                    style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+            </div>
         </div>
-    </div>
 
-    <div id="areaModal" class="modal">
-        <div class="modal-content">
-            <h3>Tambah Area Baru</h3>
-            <input type="text" id="nama_area" placeholder="Nama Area (Contoh: Lantai 1)">
-            <input type="number" id="kapasitas" placeholder="Kapasitas Slot (Contoh: 1000)">
-            <button class="btn-add" onclick="simpanArea()" style="width:100%">SIMPAN AREA</button>
-            <button onclick="closeAreaModal()"
-                style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+        <!-- MODAL: Form Tambah Area Parkir -->
+        <div id="areaModal" class="modal">
+            <div class="modal-content">
+                <h3>Tambah Area Baru</h3>
+                <input type="text" id="nama_area" placeholder="Nama Area (Contoh: Lantai 1)">
+                <input type="number" id="kapasitas" placeholder="Kapasitas Slot (Contoh: 1000)">
+                <button class="btn-add" onclick="simpanArea()" style="width:100%">SIMPAN AREA</button>
+                <button onclick="closeAreaModal()"
+                    style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">Batal</button>
+            </div>
         </div>
-    </div>
 
-    <script>
-        const API_URL = 'http://localhost:3000/api';
+        <script>
+            // Base URL API backend — cukup ubah satu kali di sini jika port server berubah
+            const API_URL = 'http://localhost:3000/api';
 
-        // --- FUNGSI LOGOUT ---
-        function handleLogout() {
-            if (confirm("Apakah anda yakin ingin keluar?")) {
-                localStorage.clear();
-                window.location.href = '../auth/login.html';
+            // ============================================================
+            // FUNGSI: handleLogout()
+            // Tujuan: Keluar dari sesi admin dan redirect ke login
+            // ============================================================
+            function handleLogout() {
+                // confirm(): dialog konfirmasi "Ya/Tidak" sebelum logout
+                if (confirm("Apakah anda yakin ingin keluar?")) {
+                    localStorage.clear();                        // Hapus semua data sesi di localStorage
+                    window.location.href = '../auth/login.html'; // Redirect ke halaman login
+                }
             }
-        }
 
-        // --- MANAJEMEN TAB ---
-       function openTab(evt, tabName) {
-    const contents = document.getElementsByClassName("tab-content");
-    for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+            // ============================================================
+            // FUNGSI: openTab(evt, tabName)
+            // Tujuan: Menampilkan tab tertentu saat menu sidebar diklik
+            //
+            // Cara kerja:
+            //   1. Sembunyikan semua tab (hapus class 'active' dari semua .tab-content)
+            //   2. Hapus class 'active' dari semua .menu-item
+            //   3. Tampilkan tab yang diklik (tambah class 'active')
+            //   4. Tandai menu item yang diklik sebagai aktif
+            //   5. Otomatis load data sesuai tab yang dibuka
+            //
+            // Parameter:
+            //   - evt: event klik (untuk mengetahui elemen mana yang diklik)
+            //   - tabName: ID tab yang akan ditampilkan
+            // ============================================================
+            function openTab(evt, tabName) {
+                // Ambil semua elemen dengan class tab-content dan hapus class 'active' dari semuanya
+                const contents = document.getElementsByClassName("tab-content");
+                for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
 
-    const menuItems = document.getElementsByClassName("menu-item");
-    for (let i = 0; i < menuItems.length; i++) menuItems[i].classList.remove("active");
+                // Ambil semua elemen menu-item dan hapus class 'active' dari semuanya
+                const menuItems = document.getElementsByClassName("menu-item");
+                for (let i = 0; i < menuItems.length; i++) menuItems[i].classList.remove("active");
 
-    document.getElementById(tabName).classList.add("active");
-    evt.currentTarget.classList.add("active");
+                // Tampilkan tab yang sesuai dengan tabName
+                document.getElementById(tabName).classList.add("active");
+                // Tandai menu item yang diklik sebagai active
+                evt.currentTarget.classList.add("active");
 
-    // --- TAMBAHKAN BARIS INI ---
-    if (tabName === 'tab-user') loadUsers();
-    if (tabName === 'tab-tarif') loadTarif();
-    if (tabName === 'tab-area') loadArea();
-    if (tabName === 'tab-log') loadLogs(); // Panggil fungsi loadLogs di sini
-}
+                // Load data yang sesuai dengan tab yang dibuka
+                // ini agar data selalu fresh saat tab dibuka
+                if (tabName === 'tab-user') loadUsers();   // Buka tab user → ambil data user
+                if (tabName === 'tab-tarif') loadTarif();  // Buka tab tarif → ambil data tarif
+                if (tabName === 'tab-area') loadArea();    // Buka tab area → ambil data area
+                if (tabName === 'tab-log') loadLogs();     // Buka tab log → ambil data log aktivitas
+            }
 
-        // --- CRUD AREA PARKIR ---
-        async function loadArea() {
-            try {
-                const res = await fetch(`${API_URL}/area`);
-                const data = await res.json();
-                const tbody = document.getElementById('list-area-body');
+            // ============================================================
+            // FUNGSI: loadArea()
+            // Tujuan: Mengambil data area parkir dari server dan menampilkannya
+            //         di tabel + kotak statistik (total kapasitas, terisi, tersedia)
+            // ============================================================
+            async function loadArea() {
+                try {
+                    const res = await fetch(`${API_URL}/area`); // GET ke /api/area
+                    const data = await res.json();               // Array area dari server
+                    const tbody = document.getElementById('list-area-body');
 
-                let totalK = 0, totalTi = 0, totalTs = 0;
+                    // Variabel akumulator untuk total statistik
+                    let totalK = 0, totalTi = 0, totalTs = 0;
 
-                tbody.innerHTML = data.map((a, index) => {
-                    const tersedia = a.kapasitas - a.terisi;
-                    totalK += Number(a.kapasitas);
-                    totalTi += Number(a.terisi);
-                    totalTs += tersedia;
+                    // .map() mengubah setiap area jadi string HTML baris tabel (<tr>)
+                    tbody.innerHTML = data.map((a, index) => {
+                        const tersedia = a.kapasitas - a.terisi; // Hitung slot yang masih kosong
+                        totalK += Number(a.kapasitas); // Tambahkan ke total kapasitas
+                        totalTi += Number(a.terisi);   // Tambahkan ke total terisi
+                        totalTs += tersedia;            // Tambahkan ke total tersedia
 
-                    return `
+                        return `
                         <tr>
-                            <td>${index + 1}</td>
+                            <td>${index + 1}</td>   <!-- Nomor urut (mulai dari 1) -->
                             <td><b>${a.nama_area}</b></td>
                             <td>${a.kapasitas} Slot</td>
                             <td>${a.terisi}</td>
-                            <td style="color:#56ab2f; font-weight:bold;">${tersedia}</td>
+                            <td style="color:#56ab2f; font-weight:bold;">${tersedia}</td> <!-- Hijau = tersedia -->
                             <td>
+                                <!-- Tombol hapus: onclick memanggil hapusArea dengan ID area ini -->
                                 <button onclick="hapusArea(${a.id_area})" style="color:#ff7e5f; border:none; background:none; cursor:pointer; font-weight:bold;">🗑️ Hapus</button>
                             </td>
                         </tr>
                     `;
-                }).join('');
+                    }).join(''); // join('') → gabungkan semua string HTML tanpa pemisah
 
-                document.getElementById('total-kapasitas').innerText = totalK;
-                document.getElementById('total-terisi').innerText = totalTi;
-                document.getElementById('total-tersedia').innerText = totalTs;
-            } catch (err) { console.error("Gagal load area"); }
-        }
+                    // Update kotak statistik dengan nilai total yang sudah dihitung
+                    document.getElementById('total-kapasitas').innerText = totalK;
+                    document.getElementById('total-terisi').innerText = totalTi;
+                    document.getElementById('total-tersedia').innerText = totalTs;
+                } catch (err) { console.error("Gagal load area"); }
+            }
 
-        async function simpanArea() {
-            const nama_area = document.getElementById('nama_area').value;
-            const kapasitas = document.getElementById('kapasitas').value;
-            if (!nama_area || !kapasitas) return alert("Lengkapi data!");
+            // ============================================================
+            // FUNGSI: simpanArea()
+            // Tujuan: Mengirim data area baru ke server (POST /api/area/add)
+            // ============================================================
+            async function simpanArea() {
+                const nama_area = document.getElementById('nama_area').value; // Ambil nama area dari input
+                const kapasitas = document.getElementById('kapasitas').value; // Ambil kapasitas dari input
+                if (!nama_area || !kapasitas) return alert("Lengkapi data!"); // Validasi: tidak boleh kosong
 
-            try {
-                const res = await fetch(`${API_URL}/area/add`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nama_area, kapasitas })
-                });
-                if (res.ok) {
-                    alert("Area berhasil ditambah!");
-                    closeAreaModal();
-                    loadArea();
-                }
-            } catch (err) { alert("Gagal simpan"); }
-        }
+                try {
+                    const res = await fetch(`${API_URL}/area/add`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nama_area, kapasitas }) // Kirim data dalam format JSON
+                    });
+                    if (res.ok) { // Jika server merespons sukses
+                        alert("Area berhasil ditambah!");
+                        closeAreaModal(); // Tutup modal
+                        loadArea();       // Refresh daftar area
+                    }
+                } catch (err) { alert("Gagal simpan"); }
+            }
 
-        async function hapusArea(id) {
-            if (!confirm("Hapus area ini?")) return;
-            try {
-                await fetch(`${API_URL}/area/delete/${id}`, { method: 'DELETE' });
-                loadArea();
-            } catch (err) { alert("Gagal hapus"); }
-        }
+            // ============================================================
+            // FUNGSI: hapusArea(id)
+            // Tujuan: Menghapus area parkir berdasarkan ID
+            // ============================================================
+            async function hapusArea(id) {
+                if (!confirm("Hapus area ini?")) return; // Konfirmasi sebelum hapus
+                try {
+                    // DELETE ke /api/area/delete/{id}
+                    await fetch(`${API_URL}/area/delete/${id}`, { method: 'DELETE' });
+                    loadArea(); // Refresh tabel setelah hapus
+                } catch (err) { alert("Gagal hapus"); }
+            }
 
-        function openAreaModal() { document.getElementById('areaModal').style.display = 'block'; }
-        function closeAreaModal() { document.getElementById('areaModal').style.display = 'none'; }
+            // Buka dan tutup modal area parkir
+            function openAreaModal() { document.getElementById('areaModal').style.display = 'block'; }
+            function closeAreaModal() { document.getElementById('areaModal').style.display = 'none'; }
 
-        // --- CRUD USER & TARIF (Keep existing logic) ---
-        async function loadUsers() {
-            try {
-                const res = await fetch(`${API_URL}/users`);
-                const users = await res.json();
-                const tbody = document.getElementById('list-user');
-                tbody.innerHTML = users.map(u => `
+            // ============================================================
+            // FUNGSI: loadTarif()
+            // Tujuan: Mengambil data tarif dari server dan tampilkan di tabel
+            //         Setiap baris punya input angka yang langsung bisa diedit
+            // ============================================================
+            async function loadTarif() {
+                try {
+                    const res = await fetch(`${API_URL}/tarif`); // GET /api/tarif
+                    const data = await res.json();
+                    document.getElementById('list-tarif').innerHTML = data.map(t => `
                     <tr>
-                        <td><b>${u.username}</b></td>
-                        <td>${u.role.toUpperCase()}</td>
-                        <td style="color: ${u.status_aktif == 1 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
-                            ● ${u.status_aktif == 1 ? 'Aktif' : 'Nonaktif'}
+                        <td><b>${t.jenis_kendaraan.toUpperCase()}</b></td>   <!-- .toUpperCase(): tampilkan kapital -->
+                        <td>
+                            <!-- Input angka inline — id dinamis berdasarkan ID tarif -->
+                            <input type="number" id="price-${t.id_tarif}" value="${t.tarif_per_jam}" style="width:100px; padding:5px;">
                         </td>
                         <td>
-                            <button onclick="editUser('${u.id_user}', '${u.username}', '${u.role}')" style="color:var(--p); background:none; border:none; cursor:pointer;">✏️ Edit</button>
+                            <!-- Tombol update tarif spesifik ini -->
+                            <button onclick="updateHarga(${t.id_tarif})" class="btn-add" style="padding:5px 10px;">💾 Update</button>
                         </td>
                     </tr>
                 `).join('');
-            } catch (err) { }
-        }
+                } catch (err) { } // Diam-diam abaikan error (log sudah ada di server)
+            }
 
-        async function loadTarif() {
-            try {
-                const res = await fetch(`${API_URL}/tarif`);
-                const data = await res.json();
-                document.getElementById('list-tarif').innerHTML = data.map(t => `
-                    <tr>
-                        <td><b>${t.jenis_kendaraan.toUpperCase()}</b></td>
-                        <td><input type="number" id="price-${t.id_tarif}" value="${t.tarif_per_jam}" style="width:100px; padding:5px;"></td>
-                        <td><button onclick="updateHarga(${t.id_tarif})" class="btn-add" style="padding:5px 10px;">💾 Update</button></td>
-                    </tr>
-                `).join('');
-            } catch (err) { }
-        }
-
-        async function updateHarga(id) {
-            const harga = document.getElementById(`price-${id}`).value;
-            await fetch(`${API_URL}/tarif/update/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tarif_per_jam: harga })
-            });
-            alert("Harga diperbarui!");
-            loadTarif();
-        }
+            // ============================================================
+            // FUNGSI: updateHarga(id)
+            // Tujuan: Mengupdate harga tarif tertentu ke server
+            // ============================================================
+            async function updateHarga(id) {
+                // Ambil nilai dari input angka dengan id dinamis "price-{id}"
+                const harga = document.getElementById(`price-${id}`).value;
+                // PUT ke /api/tarif/update/{id} dengan harga baru
+                await fetch(`${API_URL}/tarif/update/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tarif_per_jam: harga }) // Kirim harga baru
+                });
+                alert("Harga diperbarui!");
+                loadTarif(); // Refresh tampilan tabel tarif
+            }
 
 
-        async function loadUsers() {
-            try {
-                const res = await fetch(`${API_URL}/users`);
-                const users = await res.json();
-                const tbody = document.getElementById('list-user');
+            // ============================================================
+            // FUNGSI: loadUsers()
+            // Tujuan: Mengambil semua data user dari server dan tampilkan di tabel
+            //         Setiap baris punya 3 tombol: Edit, Toggle Status, Hapus
+            // ============================================================
+            async function loadUsers() {
+                try {
+                    const res = await fetch(`${API_URL}/users`); // GET /api/users
+                    const users = await res.json();              // Array user dari server
+                    const tbody = document.getElementById('list-user');
 
-                tbody.innerHTML = users.map(u => `
+                    tbody.innerHTML = users.map(u => `
             <tr>
                 <td><b>${u.username}</b></td>
-                <td>${u.role.toUpperCase()}</td>
+                <td>${u.role.toUpperCase()}</td>  <!-- Tampilkan role dengan huruf kapital -->
                 <td>
+                    <!-- Warna status: hijau = aktif, merah = nonaktif -->
+                    <!-- Operator ternary: kondisi ? benar : salah -->
                     <span style="color: ${u.status_aktif == 1 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
                         ● ${u.status_aktif == 1 ? 'Aktif' : 'Nonaktif'}
                     </span>
                 </td>
                 <td>
+                    <!-- Tombol edit: isi modal dengan data user ini -->
                     <button onclick="editUser('${u.id_user}', '${u.username}', '${u.role}')" 
                             style="color: #00b4db; background:none; border:none; cursor:pointer; font-weight:bold;">
                         ✏️ Edit
@@ -534,6 +734,8 @@
                     
                     <span style="color: #ccc; margin: 0 5px;">|</span>
 
+                    <!-- Tombol toggle status: aktif → nonaktifkan, nonaktif → aktifkan -->
+                    <!-- Warna tombol menyesuaikan status saat ini -->
                     <button onclick="toggleStatus('${u.id_user}', ${u.status_aktif})" 
                             style="color: ${u.status_aktif == 1 ? '#e74c3c' : '#2ecc71'}; background:none; border:none; cursor:pointer; font-weight:bold;">
                         ${u.status_aktif == 1 ? '🚫 Nonaktifkan' : '✅ Aktifkan'}
@@ -541,6 +743,7 @@
 
                     <span style="color: #ccc; margin: 0 5px;">|</span>
 
+                    <!-- Tombol hapus user permanen -->
                     <button onclick="hapusUser('${u.id_user}')" 
                             style="color: #ff4757; background:none; border:none; cursor:pointer; font-weight:bold;">
                         🗑️ Hapus
@@ -548,118 +751,230 @@
                 </td>
             </tr>
         `).join('');
-            } catch (err) {
-                console.error("Gagal memuat data user:", err);
-            }
-        }
-
-        async function hapusUser(id) {
-            if (!confirm("Apakah Anda yakin ingin menghapus user ini secara permanen?")) return;
-
-            try {
-                const res = await fetch(`${API_URL}/users/delete/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (res.ok) {
-                    alert("User berhasil dihapus!");
-                    loadUsers(); // Refresh tabel
-                } else {
-                    alert("Gagal menghapus user dari server");
+                } catch (err) {
+                    console.error("Gagal memuat data user:", err);
                 }
-            } catch (err) {
-                alert("Koneksi gagal saat mencoba menghapus user");
             }
-        }
+
+            // ============================================================
+            // FUNGSI: hapusUser(id)
+            // Tujuan: Menghapus user secara permanen dari database
+            // ============================================================
+            async function hapusUser(id) {
+                // Konfirmasi terlebih dahulu karena aksi ini tidak bisa dibatalkan
+                if (!confirm("Apakah Anda yakin ingin menghapus user ini secara permanen?")) return;
+
+                try {
+                    const res = await fetch(`${API_URL}/users/delete/${id}`, {
+                        method: 'DELETE' // Method DELETE → memberitahu server untuk menghapus resource
+                    });
+
+                    if (res.ok) {
+                        alert("User berhasil dihapus!");
+                        loadUsers(); // Refresh tabel setelah hapus
+                    } else {
+                        alert("Gagal menghapus user dari server");
+                    }
+                } catch (err) {
+                    alert("Koneksi gagal saat mencoba menghapus user");
+                }
+            }
 
 
-     async function loadLogs() {
-    const container = document.getElementById('log-container');
-    container.innerHTML = '<p>🔄 Memuat data...</p>';
+            // ============================================================
+            // FUNGSI: loadLogs()
+            // Tujuan: Mengambil 50 log aktivitas terbaru dan menampilkan dalam tabel
+            //         Log diberi warna badge berbeda: biru=masuk, hijau=keluar, merah=login
+            // ============================================================
+            async function loadLogs() {
+                const container = document.getElementById('log-container');
+                container.innerHTML = '<p>🔄 Memuat data...</p>'; // Tampilkan loading sementara data dikirim
 
-    try {
-        const response = await fetch(`${API_URL}/logs`);
-        const result = await response.json();
-        
-        // Cek apakah 'result' adalah array. 
-        // Jika backend mengirim { success: true, data: [...] }, gunakan result.data
-        const logs = Array.isArray(result) ? result : (result.data || []);
+                try {
+                    const response = await fetch(`${API_URL}/logs`); // GET /api/logs
+                    const result = await response.json();
 
-        if (logs.length === 0) {
-            container.innerHTML = '<p>ℹ️ Belum ada aktivitas tercatat.</p>';
-            return;
-        }
+                    // Proteksi fleksibel: ambil array dari result langsung atau dari result.data
+                    const logs = Array.isArray(result) ? result : (result.data || []);
 
-        let html = `
+                    if (logs.length === 0) {
+                        // Jika tidak ada log sama sekali
+                        container.innerHTML = '<p>ℹ️ Belum ada aktivitas tercatat.</p>';
+                        return; // Hentikan fungsi di sini
+                    }
+
+                    // Mulai membangun HTML tabel log secara manual
+                    let html = `
             <table class="log-table">
                 <thead>
                     <tr>
                         <th>Waktu</th>
                         <th>User</th>
                         <th>Aktivitas</th>
-                        <th>Keterangan</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
-        
-        html += logs.map(log => {
-            let badgeClass = 'bg-login';
-            const act = log.aktivitas ? log.aktivitas.toLowerCase() : '';
-            if(act.includes('in')) badgeClass = 'bg-checkin';
-            if(act.includes('out')) badgeClass = 'bg-checkout';
 
-            return `
+                    // Buat baris untuk setiap log
+                    html += logs.map(log => {
+                        let badgeClass = 'bg-login'; // Default: warna badge untuk login
+                        const act = log.aktivitas ? log.aktivitas.toLowerCase() : ''; // Konversi lowercase untuk perbandingan
+                        // Tentukan warna badge berdasarkan isi teks aktivitas
+                        if (act.includes('masuk')) badgeClass = 'bg-checkin';   // Mengandung kata "masuk" → biru
+                        if (act.includes('keluar')) badgeClass = 'bg-checkout'; // Mengandung kata "keluar" → hijau
+
+                        return `
                 <tr>
-<td>${new Date(log.waktu_aktivitas).toLocaleString('id-ID')}</td>
-                    <td><b>${log.username || 'Sistem'}</b></td>
+                    <!-- toLocaleString('id-ID'): format tanggal+waktu dalam format Indonesia -->
+                    <td>${new Date(log.waktu_aktivitas).toLocaleString('id-ID')}</td>
+                    <td><b>${log.username || 'Sistem'}</b></td> <!-- || 'Sistem' jika username null -->
+                    <!-- Badge berwarna sesuai jenis aktivitas -->
                     <td><span class="badge-aktivitas ${badgeClass}">${log.aktivitas}</span></td>
-                    <td>${log.detail}</td>
                 </tr>
             `;
-        }).join('');
-        
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-    } catch (error) {
-        container.innerHTML = `<p style="color:red">❌ Error: ${error.message}</p>`;
-    }
-}
+                    }).join('');
 
-        async function toggleStatus(id, currentStatus) {
-            // Balikkan status: jika 1 jadi 0, jika 0 jadi 1
-            const newStatus = currentStatus == 1 ? 0 : 1;
-            const label = newStatus == 1 ? "Mengaktifkan" : "Menonaktifkan";
-
-            if (!confirm(`Yakin ingin ${label} user ini?`)) return;
-
-            try {
-                const res = await fetch(`${API_URL}/users/status/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                if (res.ok) {
-                    loadUsers(); // Refresh tabel setelah status berubah
-                } else {
-                    alert("Gagal memperbarui status di server");
+                    html += `</tbody></table>`; // Tutup tag tabel
+                    container.innerHTML = html; // Masukkan HTML ke kontainer log
+                } catch (error) {
+                    // Tampilkan pesan error dengan warna merah jika ada masalah
+                    container.innerHTML = `<p style="color:red">❌ Error: ${error.message}</p>`;
                 }
-            } catch (err) {
-                alert("Koneksi gagal saat memperbarui status");
             }
-        }
+
+            // ============================================================
+            // FUNGSI: toggleStatus(id, currentStatus)
+            // Tujuan: Mengaktifkan atau menonaktifkan akun user
+            //
+            // Cara kerja:
+            //   - Balikkan nilai status: jika 1 (aktif) → jadi 0 (nonaktif), dan sebaliknya
+            //   - Kirim nilai baru ke server via PUT /api/users/status/{id}
+            // ============================================================
+            async function toggleStatus(id, currentStatus) {
+                // Balikkan status: jika 1 jadi 0, jika 0 jadi 1
+                const newStatus = currentStatus == 1 ? 0 : 1;
+                const label = newStatus == 1 ? "Mengaktifkan" : "Menonaktifkan"; // Label untuk konfirmasi
+
+                // Konfirmasi: tampilkan pesan sesuai aksi yang akan dilakukan
+                if (!confirm(`Yakin ingin ${label} user ini?`)) return;
+
+                try {
+                    const res = await fetch(`${API_URL}/users/status/${id}`, {
+                        method: 'PUT', // PUT = update data
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus }) // Kirim status baru: 1 atau 0
+                    });
+
+                    if (res.ok) {
+                        loadUsers(); // Refresh tabel setelah status berubah
+                    } else {
+                        alert("Gagal memperbarui status di server");
+                    }
+                } catch (err) {
+                    alert("Koneksi gagal saat memperbarui status");
+                }
+            }
 
 
+            // ============================================================
+            // FUNGSI: simpanUser()
+            // Tujuan: Menangani DUALMODE — tambah user baru ATAU edit user yang ada
+            //
+            // Cara deteksi mode:
+            //   - Jika input hidden "edit_id_user" berisi nilai → mode EDIT
+            //   - Jika input hidden kosong → mode TAMBAH
+            //
+            // Keduanya menggunakan satu tombol & satu modal yang sama
+            // ============================================================
+            async function simpanUser() {
+                const editId = document.getElementById('edit_id_user').value;  // ID user jika mode edit (kosong jika tambah)
+                const username = document.getElementById('username').value;     // Username dari input
+                const password = document.getElementById('password').value;     // Password dari input
+                const role = document.getElementById('role').value;             // Role dari dropdown
 
-        function openUserModal() { document.getElementById('userModal').style.display = 'block'; }
-        function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+                // Validasi: username harus diisi
+                if (!username) return alert("Username harus diisi!");
+                // Validasi: password wajib untuk user BARU (tidak perlu saat edit jika tidak ingin ganti)
+                if (!editId && !password) return alert("Password harus diisi!");
 
-        window.onload = () => {
-            loadUsers();
-            loadTarif();
-        };
-    </script>
+                try {
+                    let url, method, bodyData; // Deklarasi variabel yang akan diisi sesuai mode
+                    if (editId) {
+                        // Mode Edit: gunakan PUT request ke /api/users/{id}
+                        url = `${API_URL}/users/${editId}`;
+                        method = 'PUT';
+                        bodyData = { username, role }; // Hanya update username dan role
+                        if (password) bodyData.password = password; // Tambahkan password hanya jika diisi
+                    } else {
+                        // Mode Tambah: gunakan POST request ke /api/users/add
+                        url = `${API_URL}/users/add`;
+                        method = 'POST';
+                        bodyData = { username, password, role }; // Semua field wajib untuk user baru
+                    }
+
+                    // Kirim request ke server
+                    const res = await fetch(url, {
+                        method,  // Method dinamis: 'PUT' atau 'POST'
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bodyData) // Data yang dikirim
+                    });
+
+                    if (res.ok) {
+                        // Tampilkan pesan sukses yang sesuai dengan mode operasi
+                        alert(editId ? 'User berhasil diperbarui!' : 'User berhasil ditambah!');
+                        closeModal();  // Tutup modal form
+                        loadUsers();   // Refresh tabel user
+                    } else {
+                        alert('Gagal menyimpan data user');
+                    }
+                } catch (err) {
+                    alert('Koneksi gagal saat menyimpan user');
+                }
+            }
+
+            // ============================================================
+            // FUNGSI: editUser(id, username, role)
+            // Tujuan: Membuka modal dalam mode EDIT — isi form dengan data user yang ada
+            //
+            // Parameter dari baris tabel (dikirim lewat onclick di HTML):
+            //   - id      : ID user yang akan diedit
+            //   - username: Username yang akan diisi ke form
+            //   - role    : Role yang akan dipilih di dropdown
+            // ============================================================
+            function editUser(id, username, role) {
+                document.getElementById('edit_id_user').value = id;       // Set ID di hidden input → aktifkan mode edit
+                document.getElementById('username').value = username;     // Isi username
+                document.getElementById('password').value = '';           // Kosongkan password (tidak ditampilkan)
+                document.getElementById('role').value = role;             // Set dropdown ke role yang sesuai
+                document.getElementById('modalTitle').innerText = 'Edit User'; // Ubah judul modal
+                document.getElementById('userModal').style.display = 'block'; // Tampilkan modal
+            }
+
+            // ============================================================
+            // FUNGSI: openUserModal()
+            // Tujuan: Membuka modal dalam mode TAMBAH — kosongkan semua field form
+            // ============================================================
+            function openUserModal() {
+                document.getElementById('edit_id_user').value = '';       // Kosongkan ID → aktifkan mode tambah
+                document.getElementById('username').value = '';           // Kosongkan username
+                document.getElementById('password').value = '';           // Kosongkan password
+                document.getElementById('role').value = 'petugas';       // Set default dropdown ke "petugas"
+                document.getElementById('modalTitle').innerText = 'Tambah User'; // Set judul modal
+                document.getElementById('userModal').style.display = 'block';    // Tampilkan modal
+            }
+
+            // Tutup modal user: sembunyikan modal kembali
+            function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+
+            // Jalankan saat halaman pertama kali dibuka:
+            // Load data user (tab pertama aktif) dan data tarif
+            // window.onload: event yang terpicu setelah seluruh halaman selesai dirender
+            window.onload = () => {
+                loadUsers(); // Isi tabel user untuk tab pertama
+                loadTarif(); // Preload data tarif agar siap saat tab tarif dibuka
+            };
+        </script>
 </body>
 
 </html>

@@ -1,0 +1,388 @@
+================================================================================
+MATERI PRESENTASI - PROYEK E-PARKING (UKK 2026)
+Dibuat oleh: Dustin
+Bidang: Rekayasa Perangkat Lunak (RPL)
+================================================================================
+
+
+==========================================================================
+SLIDE 1 — COVER
+==========================================================================
+
+JUDUL PROYEK:
+E-PARKING — Sistem Informasi Manajemen Parkir Digital
+
+Subtitle:
+Ujian Kompetensi Keahlian (UKK) 2026
+Rekayasa Perangkat Lunak
+
+Nama: Dustin
+Tahun: 2026
+
+
+==========================================================================
+SLIDE 2 — LATAR BELAKANG MASALAH
+==========================================================================
+
+MASALAH YANG DIHADAPI:
+- Banyak area parkir masih dikelola secara manual menggunakan kertas
+- Perhitungan biaya parkir sering tidak akurat dan lambat
+- Tidak ada pencatatan yang rapi tentang siapa yang masuk dan keluar
+- Pemilik parkir (owner) kesulitan memantau pendapatan secara real-time
+- Tidak ada sistem pelaporan yang bisa dicetak atau diarsipkan
+
+SOLUSI:
+Membangun sistem parkir digital berbasis web yang:
+- Mencatat kendaraan masuk & keluar secara otomatis
+- Menghitung biaya parkir secara akurat berdasarkan durasi
+- Menghasilkan laporan pendapatan yang bisa diunduh sebagai PDF
+- Mencatat semua aktivitas sistem dalam log aktivitas
+
+
+==========================================================================
+SLIDE 3 — DESKRIPSI PROYEK
+==========================================================================
+
+NAMA PROYEK  : E-Parking
+JENIS        : Aplikasi Web (berbasis browser)
+TUJUAN       : Mengelola sistem parkir secara digital dan efisien
+
+FUNGSI UTAMA:
+1. Autentikasi login berdasarkan peran (role-based access)
+2. Manajemen data kendaraan, tarif, dan area parkir
+3. Proses check-in kendaraan masuk dan cetak tiket
+4. Proses check-out kendaraan keluar, hitung biaya, cetak struk
+5. Laporan pendapatan harian, bulanan, dan per periode
+6. Download laporan dalam format PDF
+7. Log aktivitas seluruh pengguna sistem secara real-time
+
+
+==========================================================================
+SLIDE 4 — TEKNOLOGI YANG DIGUNAKAN (TECH STACK)
+==========================================================================
+
+BACKEND (Server):
+- Node.js     → Platform JavaScript di sisi server
+- Express.js  → Framework web untuk membuat REST API
+- MySQL2      → Library untuk koneksi dan query ke database MySQL
+- Body-Parser → Middleware untuk membaca data JSON dari request
+- CORS        → Middleware untuk mengizinkan akses lintas domain/port
+
+DATABASE:
+- MySQL (via XAMPP/phpMyAdmin)
+- Nama database: db_ukk
+
+FRONTEND:
+- HTML5    → Struktur halaman web
+- CSS3     → Styling: Glassmorphism, Frutiger Aero, animasi
+- Vanilla JavaScript → Logika interaktif tanpa framework tambahan
+- jsPDF + AutoTable  → Library untuk membuat file PDF langsung dari browser
+
+DESAIN TEMA:
+- Frutiger Aero → Gaya visual biru langit glossy khas era Windows Vista/7
+- Glassmorphism → Efek kaca transparan (backdrop-filter: blur)
+
+
+==========================================================================
+SLIDE 5 — STRUKTUR DATABASE
+==========================================================================
+
+Terdapat 6 tabel utama dalam database db_ukk:
+
+1. tb_user
+   - Menyimpan data akun pengguna
+   - Kolom: id_user, username, password, role, status_aktif
+   - Role: admin | petugas | owner
+
+2. tb_kendaraan
+   - Menyimpan data setiap kendaraan yang parkir
+   - Kolom: id_kendaraan, plat_nomor, jenis_kendaraan, id_user
+
+3. tb_tarif
+   - Menyimpan harga parkir per jam berdasarkan jenis kendaraan
+   - Kolom: id_tarif, jenis_kendaraan, tarif_per_jam
+   - Contoh: Motor = Rp 2.000/jam, Mobil = Rp 5.000/jam
+
+4. tb_area_parkir
+   - Menyimpan data lantai/zona parkir
+   - Kolom: id_area, nama_area, kapasitas, terisi
+   - Contoh: Lantai 1 (kapasitas: 50, terisi: 12)
+
+5. tb_transaksi
+   - Menyimpan seluruh riwayat transaksi parkir
+   - Kolom: id_parkir, id_kendaraan, id_tarif, id_area, id_user,
+             waktu_masuk, waktu_keluar, durasi_jam, biaya_total, status
+   - Status: 'masuk' | 'keluar'
+
+6. tb_log_aktivitas
+   - Mencatat semua aktivitas penting di sistem
+   - Kolom: id_log, id_user, aktivitas, waktu_aktivitas
+   - Contoh aktivitas: "User Login", "Kendaraan Masuk: B 1234 ABC"
+
+
+==========================================================================
+SLIDE 6 — ARSITEKTUR SISTEM
+==========================================================================
+
+ARSITEKTUR: Client - Server (Two-Tier)
+
+[BROWSER / FRONTEND]
+        │  Kirim HTTP Request (fetch API)
+        ▼
+[NODE.JS SERVER - Express.js - Port 3000]
+        │  Query SQL
+        ▼
+[DATABASE MYSQL - db_ukk]
+
+Cara Kerja:
+1. User membuka halaman HTML di browser
+2. Browser mengirim request ke server Node.js melalui fetch()
+3. Server menerima request, memproses query ke MySQL
+4. MySQL mengembalikan data ke server
+5. Server mengirim data dalam format JSON ke browser
+6. Browser menampilkan data ke user
+
+Port: Server berjalan di http://localhost:3000
+
+
+==========================================================================
+SLIDE 7 — FITUR PER HALAMAN
+==========================================================================
+
+► HALAMAN LOGIN (auth/login.html)
+  - Form username dan password
+  - Validasi login via API /api/login
+  - Redirect otomatis berdasarkan role setelah login berhasil
+  - Desain Glassmorphism dengan ornamen gelembung Frutiger Aero
+  - Data user disimpan di localStorage browser
+
+► HALAMAN ADMIN (admin/index.html)
+  - Tab navigasi: User | Tarif | Area Parkir | Log Aktivitas
+  - CRUD User: tambah, edit, nonaktifkan, hapus akun
+  - CRUD Tarif: ubah harga tarif langsung dari tabel
+  - CRUD Area: tambah area/lantai, lihat kapasitas & slot tersedia
+  - Log Aktivitas: tabel 50 aktivitas terbaru dengan badge warna
+
+► HALAMAN PETUGAS (petugas/index.html)
+  - Form check-in: input plat, pilih area & tarif, cetak tiket masuk
+  - Form check-out: cari kendaraan via plat, tampilkan estimasi biaya
+  - Konfirmasi pembayaran dan cetak struk keluar
+  - Tabel real-time kendaraan yang masih di dalam parkir
+  - Shortcut KELUAR dari tabel langsung ke form pencarian
+
+► HALAMAN OWNER (owner/index.html)
+  - Statistik: pendapatan hari ini dan bulan ini
+  - Filter laporan berdasarkan rentang tanggal
+  - Tabel riwayat 7 hari terakhir
+  - Tombol download PDF laporan pendapatan
+  - Animasi background gradien yang bergerak halus
+
+
+==========================================================================
+SLIDE 8 — ALUR PENGGUNAAN SISTEM
+==========================================================================
+
+ALUR ADMIN:
+Login → Buka tab "CRUD User" → Tambah/Edit/Hapus akun petugas atau owner
+      → Buka tab "CRUD Tarif" → Ubah harga per jam kendaraan
+      → Buka tab "CRUD Area" → Tambah/hapus lantai parkir
+      → Buka tab "Log" → Pantau semua aktivitas sistem
+
+ALUR PETUGAS:
+Login → Halaman Check-In → Input plat, pilih area & tarif → Klik "MASUK"
+      → Tiket masuk otomatis tercetak (via window.print())
+      → Kendaraan muncul di tabel "Kendaraan di Dalam"
+      
+      Saat kendaraan keluar →
+      Input plat di "Check-Out" → Klik Cek → Muncul durasi & biaya
+      → Klik Konfirmasi → Struk pembayaran tercetak otomatis
+
+ALUR OWNER:
+Login → Halaman Laporan → Lihat pendapatan hari ini & bulan ini
+      → Pilih rentang tanggal → Klik "Cek Data" → Lihat total pendapatan
+      → Klik "Download PDF" → File PDF laporan tersimpan di komputer
+
+
+==========================================================================
+SLIDE 9 — CARA KERJA CHECK-IN KENDARAAN
+==========================================================================
+
+LANGKAH TEKNIS (di server.js - POST /api/transaksi/masuk):
+
+1. Petugas isi form: plat nomor, pilih area, pilih tarif
+2. Frontend kirim POST request ke /api/transaksi/masuk
+3. Server terima data: { plat_nomor, id_area, id_tarif, id_user }
+4. Server INSERT kendaraan baru ke tabel tb_kendaraan
+   → Dapatkan id_kendaraan yang baru dibuat
+5. Server INSERT transaksi ke tb_transaksi
+   → status = 'masuk', waktu_masuk = NOW()
+6. Server UPDATE tb_area_parkir: terisi = terisi + 1
+7. Server catat ke tb_log_aktivitas: "Kendaraan Masuk: [plat]"
+8. Server kirim { success: true }
+9. Frontend isi data struk → window.print() → tiket tercetak
+
+
+==========================================================================
+SLIDE 10 — CARA KERJA CHECK-OUT DAN HITUNG BIAYA
+==========================================================================
+
+LANGKAH TEKNIS (di server.js - POST /api/transaksi/keluar):
+
+RUMUS PERHITUNGAN BIAYA:
+  durasi  = Math.ceil((waktu_sekarang - waktu_masuk) / 3.600.000)
+           → dibulatkan ke atas (misal: 1.2 jam → 2 jam)
+           → minimal 1 jam walau baru masuk beberapa menit
+  biaya   = durasi × tarif_per_jam
+
+CONTOH:
+  Masuk : 08:00
+  Keluar: 10:30
+  Durasi: Math.ceil(2.5) = 3 jam
+  Tarif : Rp 5.000/jam (Mobil)
+  Biaya : 3 × Rp 5.000 = Rp 15.000
+
+SERVER SETELAH CHECKOUT:
+1. UPDATE tb_transaksi: waktu_keluar, durasi_jam, biaya_total, status='keluar'
+2. UPDATE tb_area_parkir: terisi = terisi - 1 (karena slot kosong lagi)
+3. INSERT ke tb_log_aktivitas: "Kendaraan Keluar ID: [id_parkir]"
+4. Kirim { success: true, biaya: total } ke frontend
+
+
+==========================================================================
+SLIDE 11 — FITUR KEAMANAN SISTEM
+==========================================================================
+
+1. ROLE-BASED ACCESS CONTROL
+   - Setiap role hanya bisa mengakses halaman yang sesuai hak aksesnya
+   - Admin: /admin/index.html
+   - Petugas: /petugas/index.html
+   - Owner: /owner/index.html
+
+2. PARAMETERIZED QUERY (Mencegah SQL Injection)
+   - Semua query menggunakan tanda ? sebagai placeholder
+   - Contoh: db.query("SELECT * WHERE id = ?", [id])
+   - Library mysql2 secara otomatis "escape" karakter berbahaya
+
+3. LOG AKTIVITAS (Audit Trail)
+   - Setiap aksi penting dicatat: login, check-in, check-out
+   - Bisa dilihat oleh admin kapan saja
+   - Memudahkan penelusuran jika ada kesalahan atau kecurangan
+
+4. KONFIRMASI SEBELUM HAPUS
+   - Setiap aksi hapus (user, area, dll) meminta konfirmasi terlebih dahulu
+   - Mencegah penghapusan data yang tidak disengaja
+
+5. VALIDASI INPUT
+   - Setiap form memvalidasi field yang wajib diisi sebelum dikirim
+   - Mencegah pengiriman data kosong ke server
+
+
+==========================================================================
+SLIDE 12 — KONSEP TEKNIS YANG DIGUNAKAN
+==========================================================================
+
+1. REST API
+   - Komunikasi antara frontend dan backend menggunakan HTTP
+   - Endpoint menggunakan method: GET, POST, PUT, DELETE
+   - Data dikirim dalam format JSON
+
+2. ASYNC/AWAIT (JavaScript)
+   - Semua request HTTP bersifat asinkron (tidak memblokir halaman)
+   - async function: menandai fungsi yang berisi operasi asinkron
+   - await: menunggu proses selesai sebelum lanjut ke baris berikutnya
+
+3. PROMISE.ALL
+   - Mengirim beberapa request API secara bersamaan (paralel)
+   - Lebih efisien daripada mengirim satu per satu
+   - Digunakan di halaman petugas saat load awal
+
+4. LOCALSTORAGE
+   - Menyimpan data sesi user (id, username, role) di browser
+   - Data tetap ada walau halaman di-refresh
+   - Digunakan untuk mengetahui siapa yang sedang login
+
+5. TEMPLATE LITERAL (JavaScript)
+   - Membuat HTML dinamis menggunakan backtick dan ${variabel}
+   - Lebih mudah dibaca daripada string concatenation biasa
+
+6. CLOSURES & ARROW FUNCTION
+   - Digunakan untuk mengikat nilai variabel ke dalam fungsi callback
+   - Contoh: onclick = () => checkOut(res.id_parkir, res.plat_nomor)
+
+7. GLASSMORPHISM (CSS)
+   - Efek kaca modern menggunakan:
+     background: rgba(255,255,255,0.7)
+     backdrop-filter: blur(15px)
+     border: 1px solid rgba(255,255,255,0.5)
+
+8. CSS CUSTOM PROPERTIES (Variabel CSS)
+   - :root { --p: #00b4db; }
+   - Memudahkan konsistensi warna di seluruh CSS
+
+9. @MEDIA PRINT
+   - CSS khusus yang hanya aktif saat dokumen dicetak
+   - Digunakan untuk menampilkan struk parkir saat window.print() dipanggil
+
+
+==========================================================================
+SLIDE 13 — HASIL PENGUJIAN
+==========================================================================
+
+PENGUJIAN FUNGSIONAL:
+
+✅ Login berhasil dengan username & password yang benar
+✅ Login gagal menampilkan pesan error yang tepat
+✅ Redirect ke halaman yang sesuai berdasarkan role
+✅ Check-in kendaraan berhasil, data tersimpan ke database
+✅ Tiket masuk berhasil dicetak melalui browser print
+✅ Cari kendaraan berdasarkan plat berfungsi
+✅ Biaya parkir dihitung dengan benar berdasarkan durasi
+✅ Struk pembayaran keluar berhasil dicetak
+✅ Data area parkir tumbuh saat check-in, berkurang saat check-out
+✅ Laporan pendapatan hari ini dan bulan ini akurat
+✅ Filter laporan berdasarkan rentang tanggal berfungsi
+✅ Download PDF laporan berhasil dibuat dan diunduh
+✅ Log aktivitas mencatat semua aksi pengguna
+
+
+==========================================================================
+SLIDE 14 — KELEBIHAN PROYEK
+==========================================================================
+
+1. FULL-STACK    : Menggunakan teknologi modern di backend dan frontend
+2. REAL-TIME     : Data selalu diperbarui saat aksi dilakukan
+3. AUDIT TRAIL   : Semua aktivitas tercatat di log (syarat UKK)
+4. PDF EXPORT    : Laporan bisa diunduh dan dibagikan
+5. DESAIN MODERN : Glassmorphism + Frutiger Aero yang estetis
+6. MODULAR       : Kode terorganisir dengan fungsi-fungsi yang jelas
+7. PARAMETERIZED : Query aman dari SQL Injection
+8. RESPONSIF     : Dapat diakses dari browser apapun
+9. CETAK STRUK   : Terintegrasi dengan printer via window.print()
+10. MUDAH DEPLOY : Cukup jalankan node server.js
+
+
+==========================================================================
+SLIDE 15 — PENUTUP
+==========================================================================
+
+KESIMPULAN:
+E-Parking merupakan solusi nyata untuk masalah manajemen parkir manual
+yang tidak efisien. Dengan memanfaatkan teknologi Node.js, Express, dan
+MySQL, sistem ini mampu:
+- Mengelola data kendaraan masuk dan keluar secara real-time
+- Menghitung biaya parkir secara akurat dan otomatis
+- Memberikan laporan pendapatan yang dapat diunduh sebagai PDF
+- Mencatat seluruh aktivitas sistem untuk keperluan audit
+
+SARAN PENGEMBANGAN:
+- Menambahkan fitur kamera CCTV atau scanner plat otomatis
+- Integrasi dengan sistem pembayaran digital (e-wallet)
+- Notifikasi WhatsApp/Email ke owner untuk laporan harian
+- Fitur reservasi slot parkir secara online
+- Dashboard statistik dengan grafik interaktif
+
+TERIMA KASIH
+
+================================================================================
+Dibuat dengan ❤️ oleh Dustin | UKK 2026 | Rekayasa Perangkat Lunak
+================================================================================

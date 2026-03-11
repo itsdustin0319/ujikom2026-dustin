@@ -1,207 +1,371 @@
 <!DOCTYPE html>
+<!-- Deklarasi tipe dokumen HTML5 — wajib ada di baris paling atas -->
 <html lang="id">
+<!-- lang="id" = bahasa dokumen: Bahasa Indonesia -->
 
 <head>
     <meta charset="UTF-8">
+    <!-- charset UTF-8: encoding universal agar semua karakter tampil benar -->
     <title>Petugas - E-Parking</title>
     <style>
+        /* ======================================================
+           CSS SECTION
+           Halaman Petugas: Check-In, Check-Out Kendaraan
+           Menggunakan CSS Custom Properties (variabel) agar
+           warna mudah diganti dari satu tempat
+           ====================================================== */
+
+        /* Deklarasi CSS Custom Properties (Variabel) — dipakai ulang di seluruh file CSS */
         :root {
             --p: #00b4db;
+            /* Warna utama (primary): biru langit */
             --secondary: #a8e063;
+            /* Warna sekunder: hijau lembut */
             --dark: #005a87;
+            /* Warna gelap: biru tua (untuk teks) */
             --glass: rgba(255, 255, 255, 0.7);
+            /* Warna dasar efek kaca: putih 70% transparan */
         }
 
         body {
             font-family: 'Segoe UI', 'Frutiger', sans-serif;
+            /* Font Segoe UI (bawaan Windows) atau Frutiger */
+            /* Gradasi latar belakang diagonal 135° → biru langit → biru tua → hijau */
             background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%);
             margin: 0;
             display: flex;
+            /* Flexbox agar sidebar + konten tersusun horizontal */
             min-height: 100vh;
+            /* Tinggi minimal = 100% tinggi layar */
             overflow-x: hidden;
+            /* Sembunyikan scrollbar horizontal (cegah tampilan geser kanan) */
             color: var(--dark);
+            /* Warna teks default menggunakan variabel --dark */
         }
 
-        /* Ornamen Gelembung di Background */
-        body::before, body::after {
+        /* Ornamen Gelembung di Background - dibuat dengan pseudo-element
+           ::before = elemen semu sebelum konten body
+           ::after  = elemen semu setelah konten body */
+        body::before,
+        body::after {
             content: "";
+            /* Wajib ada untuk pseudo-element */
             position: fixed;
+            /* Tetap di posisi walau halaman di-scroll */
             border-radius: 50%;
+            /* Bentuk lingkaran */
             background: rgba(255, 255, 255, 0.2);
+            /* Putih transparan → efek kaca */
             box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+            /* Cahaya dalam lingkaran → efek glossy */
             z-index: -1;
+            /* Taruh di belakang semua konten halaman */
         }
-        body::before { width: 400px; height: 400px; top: -100px; right: -100px; }
-        body::after { width: 300px; height: 300px; bottom: -50px; left: -100px; }
 
+        /* Gelembung besar di pojok kanan atas */
+        body::before {
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            /* Sebagian tersembunyi di atas layar */
+            right: -100px;
+            /* Sebagian tersembunyi di kanan layar */
+        }
+
+        /* Gelembung sedang di pojok kiri bawah */
+        body::after {
+            width: 300px;
+            height: 300px;
+            bottom: -50px;
+            /* Sebagian tersembunyi di bawah layar */
+            left: -100px;
+            /* Sebagian tersembunyi di kiri layar */
+        }
+
+        /* Sidebar navigasi kiri — posisi tetap (fixed) walau scroll */
         .sidebar {
             width: 250px;
             background: rgba(255, 255, 255, 0.4);
+            /* Semi-transparan 40% */
             backdrop-filter: blur(15px);
+            /* Blur di belakang sidebar → efek kaca */
             border-right: 1px solid rgba(255, 255, 255, 0.5);
+            /* Border kanan putih transparan */
             padding: 30px;
             height: 100vh;
+            /* Tinggi penuh = tinggi viewport */
             position: fixed;
+            /* Tidak ikut scroll — selalu terlihat */
             display: flex;
             flex-direction: column;
+            /* Susun elemen vertical → logo di atas, logout di bawah */
             box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
+            /* Bayangan ke kanan → sidebar terasa lebih dalam */
         }
 
+        /* Judul di dalam sidebar */
         .sidebar h2 {
             color: var(--dark);
+            /* Gunakan variabel warna gelap */
             text-shadow: 1px 1px 2px white;
+            /* Bayangan putih → teks lebih terbaca */
             letter-spacing: 1px;
+            /* Spasi antar huruf untuk kesan profesional */
         }
 
+        /* Area konten utama (di sebelah kanan sidebar) */
         .content {
             margin-left: 310px;
+            /* Geser ke kanan sejauh lebar sidebar + extra space */
             padding: 40px;
+            /* Jarak dalam */
             width: calc(100% - 350px);
+            /* calc(): lebar = layar penuh dikurangi 350px */
         }
 
+        /* Kartu konten Glassmorphism */
         .card {
             background: var(--glass);
+            /* Gunakan variabel --glass (putih 70% transparan) */
             padding: 30px;
             border-radius: 20px;
+            /* Sudut melengkung */
             backdrop-filter: blur(15px);
+            /* Blur di belakang kartu */
             border: 1px solid rgba(255, 255, 255, 0.6);
+            /* Border kaca tipis */
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            /* Bayangan bawah → kartu melayang */
             margin-bottom: 30px;
+            /* Jarak bawah antar kartu */
             transition: transform 0.3s ease;
+            /* Animasi smooth saat hover */
         }
 
-        .card:hover { transform: translateY(-5px); }
+        /* Efek hover kartu: naik 5px saat mouse diarahkan */
+        .card:hover {
+            transform: translateY(-5px);
+            /* Kartu terangkat sedikit → efek interaktif */
+        }
 
+        /* Judul kartu */
         h3 {
             margin-top: 0;
+            /* Hapus margin atas default h3 agar rapi dengan padding kartu */
             color: var(--dark);
+            /* Teks biru tua */
             text-shadow: 1px 1px 0px white;
+            /* Bayangan putih halus */
         }
 
-        input, select {
+        /* Styling input teks dan dropdown select */
+        input,
+        select {
             width: 100%;
+            /* Lebar penuh */
             padding: 12px;
+            /* Jarak dalam → terasa lapang */
             margin: 10px 0;
+            /* Jarak atas-bawah */
             border: 1px solid rgba(0, 90, 135, 0.2);
+            /* Border biru transparan tipis */
             border-radius: 12px;
+            /* Sudut membulat */
             background: rgba(255, 255, 255, 0.8);
+            /* Putih 80% transparan */
             outline: none;
+            /* Hapus outline default browser */
             transition: all 0.3s;
+            /* Animasi smooth saat properti berubah */
         }
 
-        input:focus, select:focus {
+        /* Efek focus pada input dan select */
+        input:focus,
+        select:focus {
             border-color: var(--p);
+            /* Border berubah ke warna primary (biru langit) */
             box-shadow: 0 0 10px rgba(0, 180, 219, 0.3);
+            /* Cahaya biru di sekitar elemen → efek glow */
         }
 
+        /* Tombol aksi utama (biru glossy) */
         .btn {
             background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            /* Gradasi biru atas-bawah */
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.4);
+            /* Border kaca putih tipis */
             padding: 12px 25px;
             border-radius: 50px;
+            /* Bentuk pil */
             cursor: pointer;
             font-weight: bold;
             width: 100%;
+            /* Lebar penuh kontainer */
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            /* Bayangan teks tipis */
             box-shadow: 0 5px 15px rgba(0, 180, 219, 0.3);
+            /* Bayangan biru lembut */
             transition: all 0.3s;
+            /* Animasi smooth */
         }
 
+        /* Efek hover tombol btn */
         .btn:hover {
             background: linear-gradient(to bottom, #00f2fe 0%, #4facfe 100%);
+            /* Balik gradasi */
             box-shadow: 0 8px 20px rgba(0, 180, 219, 0.4);
+            /* Bayangan lebih besar */
             transform: scale(1.02);
+            /* Perbesar sedikit (2%) → efek interaktif */
         }
 
+        /* Tombol logout di sidebar */
         .btn-logout {
             background: linear-gradient(to bottom, #ff7e5f 0%, #feb47b 100%);
+            /* Gradasi oranye-merah */
             margin-top: auto;
+            /* Dorong ke bawah sidebar */
             border-radius: 50px;
         }
 
+        /* Styling tabel kendaraan di dalam parkir */
         table {
             width: 100%;
             border-collapse: separate;
+            /* Gunakan separate agar border-spacing berfungsi */
             border-spacing: 0 10px;
+            /* Jarak vertikal 10px antar baris (efek "mengambang") */
             margin-top: 10px;
         }
 
+        /* Header kolom tabel */
         th {
             padding: 15px;
             text-align: left;
+            /* Rata kiri */
             color: var(--dark);
             text-transform: uppercase;
+            /* Huruf kapital semua */
             font-size: 12px;
+            /* Ukuran kecil untuk header */
             letter-spacing: 1px;
+            /* Spasi antar karakter */
             border-bottom: 2px solid rgba(0, 180, 219, 0.2);
+            /* Garis bawah header */
         }
 
+        /* Sel data tabel */
         td {
             padding: 15px;
             background: rgba(255, 255, 255, 0.5);
+            /* Semi-transparan → efek kaca */
             border-top: 1px solid white;
+            /* Garis atas tipis putih */
         }
 
-        tr td:first-child { border-radius: 15px 0 0 15px; }
-        tr td:last-child { border-radius: 0 15px 15px 0; }
+        /* Sel pertama dan terakhir tiap baris → buat sudut melengkung hanya di ujung */
+        tr td:first-child {
+            border-radius: 15px 0 0 15px;
+            /* Kiri atas + Kiri bawah melengkung */
+        }
 
-        /* --- CSS PRINT --- */
-        #struk, #struk_keluar {
+        tr td:last-child {
+            border-radius: 0 15px 15px 0;
+            /* Kanan atas + Kanan bawah melengkung */
+        }
+
+        /* --- CSS PRINT --- 
+           Elemen struk disembunyikan di layar biasa, hanya muncul saat dicetak */
+        #struk,
+        #struk_keluar {
             display: none;
+            /* Tersembunyi dari tampilan normal */
             text-align: center;
             font-family: 'Courier New', Courier, monospace;
+            /* Font mesin ketik → tampilan nota/struk */
         }
 
+        /* CSS khusus mode print (saat user tekan Ctrl+P atau window.print() dipanggil) */
         @media print {
-            body * { visibility: hidden; }
-            #struk.active, #struk.active *, 
-            #struk_keluar.active, #struk_keluar.active * {
-                visibility: visible;
+
+            /* Sembunyikan SEMUA elemen saat print */
+            body * {
+                visibility: hidden;
             }
-            #struk.active, #struk_keluar.active {
+
+            /* Tampilkan kembali HANYA struk yang aktif (punya class 'active') */
+            #struk.active,
+            #struk.active *,
+            #struk_keluar.active,
+            #struk_keluar.active * {
+                visibility: visible;
+                /* Munculkan struk dan semua isinya */
+            }
+
+            /* Posisikan struk di pojok kiri atas halaman cetak */
+            #struk.active,
+            #struk_keluar.active {
                 display: block !important;
+                /* !important: paksa tampil walau ada display:none sebelumnya */
                 position: absolute;
-                left: 0; top: 0; width: 100%;
+                left: 0;
+                top: 0;
+                width: 100%;
             }
         }
     </style>
 </head>
+<!-- // Petugas dashboard: handle vehicle check‑in, check‑out, and print tickets -->
 
 <body>
+    <!-- SIDEBAR NAVIGASI PETUGAS -->
     <div class="sidebar">
         <h2>E-PARKING</h2>
         <p>Menu Petugas</p>
+        <!-- Tombol Logout: langsung redirect ke login tanpa melalui fungsi JS khusus -->
         <button class="btn" onclick="location.href='../auth/login.html'"
             style="background:#ff4757; margin-top:50px">Logout</button>
+        <!-- background:#ff4757 adalah merah → tanda hati-hati (destructive action) -->
     </div>
 
+    <!-- AREA KONTEN UTAMA -->
     <div class="content">
+
+        <!-- KARTU 1: Form Check-In Kendaraan Masuk -->
         <div class="card">
             <h3 style="margin-top:0">🚗 Check-In Kendaraan</h3>
+            <!-- Input plat nomor kendaraan yang masuk -->
             <input type="text" id="plat" placeholder="Nomor Plat (Contoh: B 1234 ABC)">
+            <!-- Dropdown area parkir — isinya diisi otomatis oleh JavaScript dari API -->
             <select id="area"></select>
+            <!-- Dropdown tarif — isinya diisi otomatis dari API berdasarkan jenis kendaraan -->
             <select id="tarif"></select>
+            <!-- Tombol: proses check-in + cetak tiket masuk -->
             <button class="btn" onclick="checkIn()">MASUK & CETAK TIKET</button>
         </div>
 
+        <!-- KARTU 2: Form Check-Out (Cari Berdasarkan Plat) -->
         <div class="card">
             <h3 style="margin-top:0">📤 Check-Out (Cari Plat)</h3>
+            <!-- Input plat kendaraan yang akan keluar -->
             <input type="text" id="cari_plat" placeholder="Masukkan Plat Nomor Kendaraan Keluar" />
+            <!-- Tombol cari kendaraan dan tampilkan estimasi biaya -->
             <button class="btn" style="background:#2ecc71" onclick="cariKendaraan()">CEK BIAYA & KELUAR</button>
 
+            <!-- Area info keluar (default tersembunyi, muncul setelah kendaraan ditemukan) -->
             <div id="info_keluar"
-                style="display:none; margin-top:20px; border-top:1px solid var(--border-color); padding-top:15px;">
-                <p style="color: var(--text-secondary);">Waktu Masuk: <span id="v_masuk"
-                        style="color: var(--text-primary);"></span></p>
-                <p style="color: var(--text-secondary);">Durasi: <span id="v_durasi"
-                        style="color: var(--razer-green);"></span> Jam</p>
-                <h2 style="color:var(--razer-green); text-shadow: 0 0 10px var(--razer-green-glow);">Total: Rp <span
-                        id="v_biaya"></span></h2>
+                style="display:none; margin-top:20px; border-top:1px solid rgba(0,90,135,0.2); padding-top:15px;">
+                <!-- Menampilkan detail kendaraan: waktu masuk, durasi, dan total biaya -->
+                <p style="color: #666;">Waktu Masuk: <span id="v_masuk" style="color: var(--dark);"></span></p>
+                <p style="color: #666;">Durasi: <span id="v_durasi" style="color: #56ab2f;"></span> Jam</p>
+                <h2 style="color:#56ab2f;">Total: Rp <span id="v_biaya"></span></h2>
+                <!-- Tombol konfirmasi: onclick-nya akan di-set secara dinamis oleh JavaScript -->
                 <button class="btn" id="btn_konfirmasi">KONFIRMASI PEMBAYARAN & CETAK</button>
             </div>
         </div>
 
+        <!-- KARTU 3: Tabel Kendaraan Yang Sedang Di Dalam Parkir -->
         <div class="card">
             <h3>Kendaraan di Dalam</h3>
             <table>
@@ -212,23 +376,29 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
+                <!-- tbody kosong, diisi JavaScript dengan data dari API /api/kendaraan-aktif -->
                 <tbody id="t_aktif"></tbody>
             </table>
         </div>
     </div>
 
+    <!-- STRUK TIKET MASUK — disembunyikan, hanya terlihat saat dicetak -->
     <div id="struk">
         <h3>STRUK PARKIR UKK</h3>
         <p>---------------------------</p>
+        <!-- id="p_plat" diisi JavaScript dengan plat nomor kendaraan yang baru masuk -->
         <h1 id="p_plat"></h1>
+        <!-- id="p_waktu" diisi dengan waktu masuk saat ini -->
         <p id="p_waktu"></p>
         <p>---------------------------</p>
         <p>Terima Kasih</p>
     </div>
 
+    <!-- STRUK BUKTI PEMBAYARAN KELUAR — disembunyikan, hanya terlihat saat dicetak -->
     <div id="struk_keluar">
         <h3>BUKTI PEMBAYARAN PARKIR</h3>
         <p>----------------------------------</p>
+        <!-- Semua elemen span di bawah ini diisi oleh JavaScript dengan data transaksi -->
         <h1 id="pk_plat"></h1>
         <p>Masuk: <span id="pk_masuk"></span></p>
         <p>Keluar: <span id="pk_keluar"></span></p>
@@ -240,24 +410,46 @@
     </div>
 
     <script>
+        // Ambil ID user dari localStorage (disimpan saat login, dipakai untuk mencatat log)
         const id_u = localStorage.getItem('id_user');
 
+        // ============================================================
+        // FUNGSI: load()
+        // Tujuan: Mengambil data awal yang dibutuhkan halaman:
+        //   1. Daftar area parkir → untuk dropdown di form check-in
+        //   2. Daftar tarif → untuk dropdown di form check-in
+        //   3. Kendaraan aktif → untuk tabel "Kendaraan di Dalam"
+        //
+        // Promise.all(): mengirim ketiga request API SEKALIGUS secara paralel
+        //               (lebih cepat daripada satu per satu/sequential)
+        // ============================================================
         async function load() {
             try {
+                // Kirim 3 request API secara bersamaan (paralel)
+                // Destructuring: [ra, rt, rk] = ambil ketiga hasil sekaligus
                 const [ra, rt, rk] = await Promise.all([
-                    fetch('http://localhost:3000/api/area'),
-                    fetch('http://localhost:3000/api/tarif'),
-                    fetch('http://localhost:3000/api/kendaraan-aktif')
+                    fetch('http://localhost:3000/api/area'),           // Request data area parkir
+                    fetch('http://localhost:3000/api/tarif'),           // Request data tarif
+                    fetch('http://localhost:3000/api/kendaraan-aktif')  // Request kendaraan yang masih di dalam
                 ]);
-                const areas = await ra.json();
-                const tarifs = await rt.json();
-                const aktif = await rk.json();
+                const areas = await ra.json();  // Ubah response area ke JavaScript object
+                const tarifs = await rt.json(); // Ubah response tarif ke JavaScript object
+                const aktif = await rk.json();  // Ubah response kendaraan aktif ke JavaScript object
 
+                // Isi dropdown area dengan opsi dari server
+                // Template literal: buat string HTML untuk setiap item area
+                // (a.kapasitas - a.terisi) = sisa slot kosong yang tersedia
                 document.getElementById('area').innerHTML = '<option value="">-- Pilih Area --</option>' + areas.map(a => `<option value="${a.id_area}">${a.nama_area} (Sisa: ${a.kapasitas - a.terisi})</option>`).join('');
+
+                // Isi dropdown tarif dengan opsi dari server
+                // Menampilkan: "Nama Kendaraan - Rp Tarif"
                 document.getElementById('tarif').innerHTML = '<option value="">-- Pilih Tarif --</option>' + tarifs.map(t => `<option value="${t.id_tarif}">${t.jenis_kendaraan} - Rp${t.tarif_per_jam}</option>`).join('');
-               document.getElementById('t_aktif').innerHTML = aktif.map(k => `
+
+                // Isi tabel kendaraan di dalam dengan data dari server
+                // Setiap baris punya tombol "KELUAR" yang memanggil pindahKeCari(plat)
+                document.getElementById('t_aktif').innerHTML = aktif.map(k => `
     <tr>
-        <td>${new Date(k.waktu_masuk).toLocaleTimeString('id-ID')}</td>
+        <td>${new Date(k.waktu_masuk).toLocaleTimeString('id-ID')}</td> <!-- Format jam saja: HH:MM:SS -->
         <td><b>${k.plat_nomor}</b></td>
         <td>
             <button onclick="pindahKeCari('${k.plat_nomor}')" 
@@ -267,115 +459,196 @@
         </td>
     </tr>
 `).join('');
-            } catch (error) { console.error(error); }
+            } catch (error) { console.error(error); } // Tampilkan error di DevTools jika ada masalah
         }
 
-function pindahKeCari(plat) {
-    // 1. Masukkan plat nomor dari tabel ke kotak input pencarian
-    document.getElementById('cari_plat').value = plat;
-    
-    // 2. Scroll ke atas agar petugas langsung melihat rincian biaya
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // 3. Panggil fungsi cariKendaraan secara otomatis
-    cariKendaraan();
-}
+        // ============================================================
+        // FUNGSI: pindahKeCari(plat)
+        // Tujuan: Shortcut bagi petugas — klik "KELUAR" di tabel untuk langsung
+        //         mengisi input cari plat dan otomatis cari data kendaraan
+        //
+        // Urutan:
+        //   1. Isi kotak input "cari_plat" dengan plat dari tabel
+        //   2. Scroll halaman ke atas agar info biaya terlihat
+        //   3. Panggil cariKendaraan() secara otomatis
+        // ============================================================
+        function pindahKeCari(plat) {
+            // 1. Masukkan plat nomor dari tabel ke kotak input pencarian
+            document.getElementById('cari_plat').value = plat;
 
+            // 2. Scroll ke atas agar petugas langsung melihat rincian biaya
+            // behavior: 'smooth' → animasi scroll halus (bukan langsung lompat)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // 3. Panggil fungsi cariKendaraan secara otomatis
+            cariKendaraan();
+        }
+
+        // ============================================================
+        // FUNGSI: checkIn()
+        // Tujuan: Proses kendaraan masuk parkir
+        //
+        // Alur:
+        //   1. Ambil data dari form (plat, area, tarif)
+        //   2. Validasi: pastikan semua terisi
+        //   3. Kirim ke API /api/transaksi/masuk
+        //   4. Jika berhasil: isi struk + cetak + refresh tabel
+        // ============================================================
         async function checkIn() {
-            const plat = document.getElementById('plat').value;
-            const area = document.getElementById('area').value;
-            const tarif = document.getElementById('tarif').value;
+            const plat = document.getElementById('plat').value;   // Plat nomor kendaraan
+            const area = document.getElementById('area').value;   // ID area parkir yang dipilih
+            const tarif = document.getElementById('tarif').value; // ID tarif yang dipilih
+            // Validasi: jika salah satu field kosong, tampilkan peringatan dan hentikan
             if (!plat || !area || !tarif) return alert("Lengkapi data!");
 
+            // FIX: Ambil jenis_kendaraan dari teks option dropdown tarif yang dipilih
+            // Contoh option text: "Motor - Rp2000" → split(' - ')[0] → "Motor"
+            const tarifEl = document.getElementById('tarif');
+            const jenis_kendaraan = tarifEl.options[tarifEl.selectedIndex].text.split(' - ')[0];
+            // Ini penting agar kolom jenis_kendaraan di tb_kendaraan tidak NULL
+
             try {
+                // Kirim data check-in ke server via HTTP POST
+                // Sekarang ikutkan jenis_kendaraan agar tersimpan dengan benar di database
                 const response = await fetch('http://localhost:3000/api/transaksi/masuk', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ plat_nomor: plat, id_area: area, id_tarif: tarif, id_user: id_u })
+                    body: JSON.stringify({ plat_nomor: plat, jenis_kendaraan: jenis_kendaraan, id_area: area, id_tarif: tarif, id_user: id_u })
                 });
 
-                if (response.ok) {
-                    document.getElementById('p_plat').innerText = plat;
-                    document.getElementById('p_waktu').innerText = new Date().toLocaleString();
-                    cetakStruk('struk');
-                    load();
-                    document.getElementById('plat').value = '';
+                if (response.ok) { // response.ok = true jika status HTTP 200-299 (sukses)
+                    // Isi data struk masuk sebelum dicetak
+                    document.getElementById('p_plat').innerText = plat; // Isi plat di struk
+                    document.getElementById('p_waktu').innerText = new Date().toLocaleString(); // Waktu sekarang
+                    cetakStruk('struk'); // Cetak struk masuk
+                    load(); // Refresh tabel kendaraan di dalam
+                    document.getElementById('plat').value = ''; // Kosongkan input plat untuk check-in berikutnya
+                } else {
+                    // Jika server merespons error (misal status 500)
+                    const err = await response.json();
+                    alert('Gagal Check-In: ' + (err.message || 'Error server'));
                 }
-            } catch (error) { alert(error.message); }
+            } catch (error) { alert('Server tidak bisa dihubungi: ' + error.message); } // Tampilkan error jika koneksi gagal
         }
 
+        // ============================================================
+        // FUNGSI: cariKendaraan()
+        // Tujuan: Cari data kendaraan berdasarkan plat untuk proses check-out
+        //
+        // Alur:
+        //   1. Ambil plat dari input
+        //   2. Panggil API /api/cari-kendaraan?plat=...
+        //   3. Jika ditemukan: tampilkan info & siapkan tombol konfirmasi
+        //   4. Jika tidak ditemukan: tampilkan pesan error
+        // ============================================================
         async function cariKendaraan() {
-    const plat = document.getElementById('cari_plat').value;
-    if (!plat) return alert("Masukkan plat nomor!");
+            const plat = document.getElementById('cari_plat').value; // Plat yang dicari
+            if (!plat) return alert("Masukkan plat nomor!"); // Validasi: jangan kirim jika kosong
 
-    try {
-        const r = await fetch(`http://localhost:3000/api/cari-kendaraan?plat=${encodeURIComponent(plat)}`);
-        const res = await r.json();
-        
-        if (r.ok && res.success) {
-            // Tampilkan area info
-            document.getElementById('info_keluar').style.display = 'block';
-            
-            // SESUAIKAN: Mengambil data langsung dari res (bukan res.data)
-            document.getElementById('v_masuk').innerText = new Date(res.waktu_masuk).toLocaleString('id-ID');
-            document.getElementById('v_durasi').innerText = res.durasi;
-            document.getElementById('v_biaya').innerText = res.biaya_estimasi.toLocaleString();
-            
-            // Set action untuk tombol konfirmasi
-            document.getElementById('btn_konfirmasi').onclick = () => checkOut(res.id_parkir, res.plat_nomor);
-            
-            alert("Data ditemukan!");
-        } else {
-            alert(res.message || "Kendaraan tidak ditemukan atau sudah keluar");
-            document.getElementById('info_keluar').style.display = 'none';
+            try {
+                // encodeURIComponent: encode karakter khusus di plat (misal spasi → %20)
+                // agar URL tidak rusak saat ada karakter aneh
+                const r = await fetch(`http://localhost:3000/api/cari-kendaraan?plat=${encodeURIComponent(plat)}`);
+                const res = await r.json(); // Parse response ke object
+
+                if (r.ok && res.success) { // Kendaraan ditemukan dan ada di dalam parkir
+                    // Tampilkan area info yang sebelumnya disembunyikan
+                    document.getElementById('info_keluar').style.display = 'block';
+
+                    // SESUAIKAN: Mengambil data langsung dari res (bukan res.data)
+                    // Format tampilan waktu menggunakan locale Indonesia
+                    document.getElementById('v_masuk').innerText = new Date(res.waktu_masuk).toLocaleString('id-ID');
+                    document.getElementById('v_durasi').innerText = res.durasi; // Durasi dalam jam
+                    document.getElementById('v_biaya').innerText = res.biaya_estimasi.toLocaleString(); // Format ribuan
+
+                    // Set action untuk tombol konfirmasi — tombol → panggil checkOut dengan ID & plat
+                    // Arrow function agar id dan plat langsung "ditangkap" nilainya (closure)
+                    document.getElementById('btn_konfirmasi').onclick = () => checkOut(res.id_parkir, res.plat_nomor);
+
+                    alert("Data ditemukan!"); // Notifikasi singkat ke petugas
+                } else {
+                    // Kendaraan tidak ditemukan atau sudah keluar
+                    alert(res.message || "Kendaraan tidak ditemukan atau sudah keluar");
+                    document.getElementById('info_keluar').style.display = 'none'; // Sembunyikan kembali info
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error: Gagal menghubungi server");
+            }
         }
-    } catch (err) {
-        console.error(err);
-        alert("Error: Gagal menghubungi server");
-    }
-}
-       async function checkOut(id, plat) {
-    try {
-        const r = await fetch('http://localhost:3000/api/transaksi/keluar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_parkir: id })
-        });
-        
-        const res = await r.json();
 
-        if (r.ok) {
-            // Isi data struk keluar untuk di-print
-            document.getElementById('pk_plat').innerText = plat;
-            document.getElementById('pk_masuk').innerText = document.getElementById('v_masuk').innerText;
-            document.getElementById('pk_keluar').innerText = new Date().toLocaleString('id-ID');
-            document.getElementById('pk_durasi').innerText = document.getElementById('v_durasi').innerText;
-            document.getElementById('pk_biaya').innerText = res.biaya.toLocaleString();
+        // ============================================================
+        // FUNGSI: checkOut(id, plat)
+        // Tujuan: Konfirmasi pembayaran & proses kendaraan keluar
+        //
+        // Parameter:
+        //   - id  : id_parkir dari transaksi yang akan diproses keluar
+        //   - plat: plat nomor kendaraan (untuk ditampilkan di struk)
+        //
+        // Alur:
+        //   1. Kirim id_parkir ke API /api/transaksi/keluar
+        //   2. Server hitung biaya aktual
+        //   3. Isi data struk keluar
+        //   4. Cetak struk keluar
+        //   5. Reset tampilan + refresh tabel
+        // ============================================================
+        async function checkOut(id, plat) {
+            try {
+                const r = await fetch('http://localhost:3000/api/transaksi/keluar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_parkir: id }) // Kirim hanya ID parkir, server yang hitung sisanya
+                });
 
-            alert("Pembayaran Berhasil!");
-            
-            // Jalankan fungsi cetak
-            cetakStruk('struk_keluar');
-            
-            // Reset tampilan
-            document.getElementById('info_keluar').style.display = 'none';
-            document.getElementById('cari_plat').value = '';
-            load(); // Refresh tabel kendaraan di dalam
-        } else {
-            alert(res.message || "Gagal memproses transaksi keluar");
+                const res = await r.json(); // Parse response dari server
+
+                if (r.ok) { // Transaksi keluar berhasil diproses
+                    // Isi data struk keluar untuk di-print
+                    document.getElementById('pk_plat').innerText = plat; // Plat kendaraan
+                    document.getElementById('pk_masuk').innerText = document.getElementById('v_masuk').innerText; // Salin waktu masuk yang sudah ditampilkan
+                    document.getElementById('pk_keluar').innerText = new Date().toLocaleString('id-ID'); // Waktu keluar = sekarang
+                    document.getElementById('pk_durasi').innerText = document.getElementById('v_durasi').innerText; // Salin durasi
+                    document.getElementById('pk_biaya').innerText = res.biaya.toLocaleString(); // Biaya AKTUAL dari server (bukan estimasi)
+
+                    alert("Pembayaran Berhasil!"); // Notifikasi ke petugas
+
+                    // Jalankan fungsi cetak untuk struk bukti pembayaran
+                    cetakStruk('struk_keluar');
+
+                    // Reset tampilan ke kondisi awal setelah cetak
+                    document.getElementById('info_keluar').style.display = 'none'; // Sembunyikan info biaya
+                    document.getElementById('cari_plat').value = '';               // Kosongkan input plat
+                    load(); // Refresh tabel kendaraan di dalam (kendaraan ini seharusnya sudah tidak muncul)
+                } else {
+                    alert(res.message || "Gagal memproses transaksi keluar");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Terjadi kesalahan sistem saat proses keluar");
+            }
         }
-    } catch (error) {
-        console.error(error);
-        alert("Terjadi kesalahan sistem saat proses keluar");
-    }
-}
+
+        // ============================================================
+        // FUNGSI: cetakStruk(idElemen)
+        // Tujuan: Menampilkan elemen struk yang ditentukan, lalu panggil print
+        //
+        // Cara kerja:
+        //   - Tambahkan class 'active' ke elemen struk (CSS @media print akan muncul)
+        //   - Panggil window.print() → browser buka dialog cetak
+        //   - Hapus class 'active' setelah selesai (sembunyikan kembali)
+        //
+        // Parameter:
+        //   - idElemen: 'struk' untuk tiket masuk, 'struk_keluar' untuk bukti bayar
+        // ============================================================
         function cetakStruk(idElemen) {
             const el = document.getElementById(idElemen);
-            el.classList.add('active'); // Tandai struk yang mau di-print
-            window.print();
-            el.classList.remove('active');
+            el.classList.add('active'); // Tambah class 'active' agar struk terlihat saat print
+            window.print();             // Buka dialog print browser
+            el.classList.remove('active'); // Hapus class setelah print agar struk tersembunyi kembali
         }
 
+        // Panggil fungsi load() saat halaman pertama kali dibuka
+        // Untuk mengisi dropdown area, tarif, dan tabel kendaraan di dalam
         load();
     </script>
 </body>

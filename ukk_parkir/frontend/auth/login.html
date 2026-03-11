@@ -1,140 +1,271 @@
 <!DOCTYPE html>
+<!-- Deklarasi tipe dokumen HTML5 — wajib ada di baris pertama file HTML -->
 <html lang="id">
+<!-- lang="id" = bahasa halaman ini adalah Bahasa Indonesia (penting untuk aksesibilitas & SEO) -->
+
 <head>
     <meta charset="UTF-8">
+    <!-- charset UTF-8 = encoding karakter universal, agar huruf khusus (ä, é, dsb.) tampil benar -->
     <title>Login E-Parking - Frutiger Aero</title>
+    <!-- Judul tab browser, ditampilkan di atas browser dan di hasil pencarian Google -->
     <style>
-        body { 
-            /* Background gradasi langit cerah khas Frutiger Aero */
-            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%); 
-            font-family: 'Segoe UI', 'Frutiger', sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
+        /* ======================================================
+           CSS SECTION - Styling Tampilan Halaman Login
+           Tema: Frutiger Aero — desain langit biru glossy
+           khas era Windows Vista/7 (2000-an)
+           ====================================================== */
+
+        body {
+            /* Background dengan gradasi 3 warna diagonal (135 derajat):
+               Biru langit → biru tua → hijau lembut
+               linear-gradient(arah, warna1, warna2, ...) */
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #a8e063 100%);
+            font-family: 'Segoe UI', 'Frutiger', sans-serif;
+            /* Font bersih khas sistem Windows */
+            display: flex;
+            /* Aktifkan Flexbox untuk layout */
+            justify-content: center;
+            /* Pusatkan konten secara horizontal */
+            align-items: center;
+            /* Pusatkan konten secara vertikal */
+            height: 100vh;
+            /* Tinggi body = 100% tinggi layar (viewport height) */
+            margin: 0;
+            /* Hapus margin default browser agar layout rapi */
             overflow: hidden;
+            /* Sembunyikan scrollbar, halaman tidak bisa di-scroll */
             position: relative;
+            /* Jadikan body sebagai acuan posisi elemen anak (ornamen gelembung) */
         }
 
-        /* Ornamen Gelembung Glossy */
-        body::before, body::after {
+        /* Ornamen Gelembung Glossy (dekorasi latar belakang)
+           Dibuat menggunakan pseudo-element ::before dan ::after
+           Teknik ini membuat elemen dekoratif TANPA menambah tag HTML baru */
+        body::before,
+        body::after {
             content: "";
+            /* Wajib ada (meski kosong) agar pseudo-element muncul */
             position: absolute;
+            /* Posisi bebas (tidak mempengaruhi alur layout) */
             border-radius: 50%;
+            /* Membuat bentuk lingkaran sempurna */
             background: rgba(255, 255, 255, 0.2);
+            /* Putih transparan 20% → efek kaca */
             box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+            /* Bayangan dalam → efek glossy */
             z-index: 0;
+            /* Di belakang konten utama */
         }
-        body::before { width: 300px; height: 300px; top: -50px; left: -50px; }
-        body::after { width: 200px; height: 200px; bottom: 20px; right: 50px; }
 
-        .login-box { 
-            background: rgba(255, 255, 255, 0.7); 
-            padding: 40px; 
-            border-radius: 20px; 
-            width: 340px; 
+        /* Gelembung besar di pojok kiri atas */
+        body::before {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            /* Sebagian keluar dari layar bagian atas */
+            left: -50px;
+            /* Sebagian keluar dari layar bagian kiri */
+        }
+
+        /* Gelembung kecil di pojok kanan bawah */
+        body::after {
+            width: 200px;
+            height: 200px;
+            bottom: 20px;
+            /* 20px dari bawah layar */
+            right: 50px;
+            /* 50px dari kanan layar */
+        }
+
+        /* Kotak utama form login (efek Glassmorphism — kaca transparan modern) */
+        .login-box {
+            background: rgba(255, 255, 255, 0.7);
+            /* Putih 70% transparan → terlihat kaca */
+            padding: 40px;
+            /* Jarak dalam kotak (semua sisi) */
+            border-radius: 20px;
+            /* Sudut melengkung */
+            width: 340px;
+            /* Lebar kotak form */
             /* Efek kaca (Glassmorphism) & bayangan lembut */
             backdrop-filter: blur(15px);
+            /* Blur konten DI BELAKANG kotak → efek kaca buram */
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
-            text-align: center; 
+            /* Border putih transparan, seperti pinggiran kaca */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            /* Bayangan lembut → kotak terasa melayang */
+            text-align: center;
+            /* Teks di tengah */
             z-index: 1;
+            /* Tampilkan di atas ornamen gelembung (z-index lebih besar) */
         }
 
-        h2 { 
-            color: #005a87; 
-            margin-bottom: 25px; 
+        /* Judul "LOGIN PARKIR" di dalam kotak */
+        h2 {
+            color: #005a87;
+            /* Warna biru tua — kontras bagus di atas latar biru */
+            margin-bottom: 25px;
+            /* Jarak bawah sebelum input username */
             font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            /* Tebal sedang (bukan bold penuh) */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            /* Bayangan putih lembut → memperindah teks */
             letter-spacing: 1px;
+            /* Jarak antar huruf sedikit lebih lebar → kesan profesional */
         }
 
-        input { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 12px 0; 
-            border: 1.5px solid rgba(0, 131, 176, 0.3); 
-            border-radius: 12px; 
-            box-sizing: border-box; 
+        /* Styling untuk semua elemen <input> (username & password) */
+        input {
+            width: 100%;
+            /* Lebar penuh mengisi kotak form */
+            padding: 14px;
+            /* Jarak dalam input → input terasa lapang */
+            margin: 12px 0;
+            /* Jarak atas-bawah antar input */
+            border: 1.5px solid rgba(0, 131, 176, 0.3);
+            /* Border tipis berwarna biru transparan */
+            border-radius: 12px;
+            /* Sudut membulat */
+            box-sizing: border-box;
+            /* Padding masuk ke dalam perhitungan lebar (tidak meluber keluar) */
             background: rgba(255, 255, 255, 0.9);
+            /* Hampir putih solid (sedikit transparan) */
             transition: all 0.3s ease;
+            /* Animasi smooth saat ada perubahan properti CSS */
             outline: none;
+            /* Hapus garis biru default browser saat input di-klik */
         }
 
+        /* Efek saat input sedang difokuskan (diklik user) */
         input:focus {
             border-color: #00b4db;
+            /* Warna border berubah ke biru cerah */
             box-shadow: 0 0 10px rgba(0, 180, 219, 0.4);
+            /* Cahaya biru di sekitar input → efek glow */
         }
 
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            /* Gradasi Glossy pada tombol */
-            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%); 
-            color: white; 
-            border: 1px solid rgba(255,255,255,0.4); 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold; 
+        /* Styling tombol MASUK */
+        button {
+            width: 100%;
+            /* Lebar penuh */
+            padding: 14px;
+            /* Tinggi tombol */
+            /* Gradasi Glossy pada tombol (atas=biru muda, bawah=biru terang) */
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            /* Teks putih */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            /* Border putih transparan → pinggiran kaca */
+            border-radius: 50px;
+            /* Membuat tombol berbentuk pil (pill shape) */
+            cursor: pointer;
+            /* Kursor berubah jadi tangan saat hover */
+            font-size: 16px;
+            /* Ukuran teks tombol */
+            font-weight: bold;
+            /* Teks tebal */
             box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3);
+            /* Bayangan bawah → tombol terkesan 3D */
             transition: transform 0.2s, box-shadow 0.2s;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            /* Animasi smooth untuk efek hover */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            /* Bayangan teks tipis → keterbacaan lebih baik */
         }
 
-        button:hover { 
+        /* Efek saat mouse di atas tombol */
+        button:hover {
             background: linear-gradient(to bottom, #00f2fe 0%, #4facfe 100%);
+            /* Gradasi dibalik */
             transform: translateY(-2px);
+            /* Tombol bergerak naik 2px → efek "terangkat" */
             box-shadow: 0 6px 20px rgba(0, 180, 219, 0.5);
+            /* Bayangan lebih besar → efek lebih melayang */
         }
 
+        /* Efek saat tombol diklik */
         button:active {
             transform: translateY(1px);
+            /* Tombol bergerak turun 1px → efek "ditekan" */
         }
 
+        /* Teks kecil di bawah form (footer info) */
         .footer-text {
             margin-top: 20px;
             font-size: 12px;
             color: #005a87;
             opacity: 0.7;
+            /* Transparansi 70% → teks terlihat samar */
         }
     </style>
 </head>
+<!-- // Login page: user authentication form -->
+
 <body>
+    <!-- Kotak utama form login yang tampil di tengah layar -->
     <div class="login-box">
         <h2>LOGIN PARKIR</h2>
+        <!-- Input untuk username. id="user" digunakan JavaScript untuk mengambil nilainya -->
         <input type="text" id="user" placeholder="Username">
+        <!-- Input untuk password. type="password" membuat teks otomatis disembunyikan (***) -->
         <input type="password" id="pass" placeholder="Password">
+        <!-- Tombol MASUK: saat diklik, memanggil fungsi prosesLogin() -->
         <button onclick="prosesLogin()">MASUK</button>
     </div>
 
     <script>
+        // ============================================================
+        // FUNGSI: prosesLogin()
+        // Tujuan: Memproses login saat tombol MASUK diklik
+        //
+        // Alur kerja:
+        //   1. Ambil nilai dari kotak input username & password
+        //   2. Kirim ke server via fetch (HTTP POST ke /api/login)
+        //   3. Jika berhasil → simpan data user ke localStorage → redirect ke halaman yang sesuai
+        //   4. Jika gagal → tampilkan pesan error
+        //
+        // async/await: menunggu proses fetch selesai sebelum lanjut ke baris berikutnya
+        // ============================================================
         async function prosesLogin() {
-            const username = document.getElementById('user').value;
-            const password = document.getElementById('pass').value;
+            const username = document.getElementById('user').value; // Ambil nilai yang diketik di kolom username
+            const password = document.getElementById('pass').value; // Ambil nilai yang diketik di kolom password
 
             try {
+                // fetch(): mengirim HTTP request ke server Node.js
+                // method: 'POST' → mengirim data (bukan GET yang hanya meminta data)
+                // headers: 'Content-Type': 'application/json' → memberitahu server bahwa data dikirim dalam format JSON
+                // body: JSON.stringify({...}) → ubah object JavaScript jadi teks JSON untuk dikirim
                 const res = await fetch('http://localhost:3000/api/login', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username, password})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }) // Kirim username & password ke server
                 });
-                const data = await res.json();
+                const data = await res.json(); // Ubah response JSON dari server menjadi object JavaScript
 
-                if(data.success) {
-                    alert('Login Berhasil sebagai ' + data.user.role);
-                    // Arahkan ke folder admin/petugas/owner
-                    if(data.user.role === 'admin') window.location.href = '../admin/index.html';
-                    else if(data.user.role === 'petugas') window.location.href = '../petugas/index.html';
-                    else window.location.href = '../owner/index.html';
+                if (data.success) {
+                    // Login BERHASIL: server menemukan user yang cocok
+                    // localStorage: penyimpanan data di browser yang tetap ada walau halaman di-refresh
+                    // Simpan data user untuk dipakai di halaman lain (admin/petugas/owner)
+                    localStorage.setItem('id_user', data.user.id_user);   // Simpan ID user
+                    localStorage.setItem('username', data.user.username); // Simpan nama user
+                    localStorage.setItem('role', data.user.role);         // Simpan role (admin/petugas/owner)
+
+                    alert('Login Berhasil sebagai ' + data.user.role); // Tampilkan notifikasi sukses
+                    // Arahkan ke folder admin/petugas/owner sesuai role user
+                    // Pengecekan role menentukan halaman mana yang akan dibuka
+                    if (data.user.role === 'admin') window.location.href = '../admin/index.html';         // Ke halaman admin
+                    else if (data.user.role === 'petugas') window.location.href = '../petugas/index.html'; // Ke halaman petugas
+                    else window.location.href = '../owner/index.html'; // Semua role lain → ke halaman owner
                 } else {
-                    alert(data.message);
+                    // Login GAGAL: server tidak menemukan kombinasi username-password yang cocok
+                    alert(data.message); // Tampilkan pesan error dari server (contoh: "Username/Password Salah")
                 }
             } catch (err) {
+                // catch: menangkap error jaringan (contohnya server belum dijalankan)
                 alert('Server Belum Jalan! Jalankan node server.js di terminall.');
+                // Pesan ini muncul jika Node.js server belum dijalankan atau port 3000 tidak aktif
             }
         }
     </script>
 </body>
+
 </html>
