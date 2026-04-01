@@ -1,25 +1,13 @@
-// ============================================================
-// FILE: server.js
-// DESKRIPSI: Backend utama aplikasi E-Parking
-//            Dibuat menggunakan Node.js + Express.js
-//            Menangani semua request dari frontend via REST API
-// ============================================================
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
-// --- IMPORT LIBRARY / MODUL ---
-const express = require('express');      // Express: framework web untuk Node.js, digunakan untuk membuat server dan routing API
-const mysql = require('mysql2');         // mysql2: library untuk koneksi dan query ke database MySQL
-const cors = require('cors');            // cors: middleware untuk mengizinkan request dari domain/port berbeda (misal: frontend ke backend)
-const bodyParser = require('body-parser'); // body-parser: middleware untuk membaca isi (body) dari request POST/PUT dalam format JSON
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-// --- INISIALISASI APP EXPRESS ---
-const app = express(); // Membuat instance aplikasi Express
-app.use(cors());        // Aktifkan CORS agar frontend (beda port) bisa mengakses API ini
-app.use(bodyParser.json()); // Aktifkan pembacaan body JSON dari setiap request yang masuk
-
-// ============================================================
-// KONEKSI DATABASE MySQL
-// Konfigurasi koneksi ke database lokal (XAMPP/phpMyAdmin)
-// ============================================================
+// KONEKSI DB
 const db = mysql.createConnection({
     host: 'localhost', // Alamat server database, 'localhost' = di komputer yang sama
     user: 'root',      // Username MySQL (default XAMPP = root)
@@ -280,14 +268,12 @@ app.get('/api/logs', (req, res) => {
             console.error("❌ Database Error:", err.message); // Tampilkan error di terminal server
             return res.status(500).json({ error: err.message }); // Kirim pesan error ke frontend
         }
-        res.json(results); // Kirim data log ke frontend dalam format array JSON
+        res.json(results);
     });
 });
+ 
 
 
-// POST /api/kendaraan/add
-// Tujuan: Menambahkan data kendaraan baru secara manual (bukan melalui check-in)
-// Body request: { plat_nomor, jenis_kendaraan, id_user }
 app.post('/api/kendaraan/add', (req, res) => {
     const { plat_nomor, jenis_kendaraan, id_user } = req.body; // Destructuring: ambil 3 nilai sekaligus dari body
     const sql = "INSERT INTO tb_kendaraan (plat_nomor, jenis_kendaraan, id_user) VALUES (?, ?, ?)";
@@ -467,24 +453,42 @@ app.get('/api/owner/pendapatan', (req, res) => {
 });
 
 // GET /api/owner/history
-// Tujuan: Menampilkan riwayat pendapatan per-hari untuk 7 hari terakhir
-// Digunakan untuk tabel riwayat transaksi di halaman owner
+// Tujuan: Menampilkan riwayat pendapatan per-hari sesuai rentang tanggal yang dipilih
+// Digunakan untuk tabel riwayat transaksi dan grafik di halaman owner
 // GROUP BY tanggal: total pendapatan digabung per hari
-// DATE_SUB: fungsi MySQL untuk mengurangi interval dari tanggal sekarang
 app.get('/api/owner/history', (req, res) => {
-    const sql = `
-        SELECT DATE(waktu_keluar) as tanggal, SUM(biaya_total) as pendapatan, COUNT(*) as jumlah_kendaraan
-        FROM tb_transaksi 
-        WHERE status = 'keluar' 
-        AND waktu_keluar >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DATE(waktu_keluar)
-        ORDER BY tanggal DESC
-    `;
-    // GROUP BY DATE(waktu_keluar): gabungkan semua transaksi pada tanggal yang sama jadi satu baris
-    // ORDER BY tanggal DESC: tampilkan dari yang terbaru ke terlama
-    db.query(sql, (err, results) => {
+    const { start, end } = req.query;
+    
+    // Default: 7 hari terakhir jika tidak ada parameter
+    let sql, params;
+    
+    if (start && end) {
+        // Filter berdasarkan tanggal yang dipilih user
+        sql = `
+            SELECT DATE(waktu_keluar) as tanggal, SUM(biaya_total) as pendapatan, COUNT(*) as jumlah_kendaraan
+            FROM tb_transaksi 
+            WHERE status = 'keluar' 
+            AND DATE(waktu_keluar) BETWEEN ? AND ?
+            GROUP BY DATE(waktu_keluar)
+            ORDER BY tanggal DESC
+        `;
+        params = [start, end];
+    } else {
+        // Default 7 hari terakhir jika tidak ada filter
+        sql = `
+            SELECT DATE(waktu_keluar) as tanggal, SUM(biaya_total) as pendapatan, COUNT(*) as jumlah_kendaraan
+            FROM tb_transaksi 
+            WHERE status = 'keluar' 
+            AND waktu_keluar >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            GROUP BY DATE(waktu_keluar)
+            ORDER BY tanggal DESC
+        `;
+        params = [];
+    }
+    
+    db.query(sql, params, (err, results) => {
         if (err) return res.status(500).json(err);
-        res.json(results); // Kirim data histori harian ke frontend
+        res.json(results);
     });
 });
 
